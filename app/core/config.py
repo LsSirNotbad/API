@@ -53,11 +53,10 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")            # 前端静态文件目
 FONT_DIR = _env("FONT_DIR", os.path.join(BASE_DIR, "fonts")).strip()  # 验证码等图像字体目录；默认项目根/fonts，可用 FONT_DIR=/custom/path 覆盖
 
 # ---------------- 接口与后台鉴权 ----------------
-# SM4对称加密，生成密钥：0nKrqy9X8hS2UBrM5blkVA————输入内容：姓名
-API_TOKEN = _env("API_TOKEN", "k8X4YpoYskF0zjEYT6URPg==")            # 接口访问密钥（入库只存哈希）
+API_TOKEN = _env("API_TOKEN", "输入自己设置的token")            # 接口访问密钥（入库只存哈希）
 ADMIN_USER = _env("ADMIN_USER", "admin")              # 后台登录账号
-ADMIN_PASSWORD = _env("ADMIN_PASSWORD", "5454294!Ljx")      # 后台登录密码
-ADMIN_SECRET = _env("ADMIN_SECRET", "api-admin")      # 会话加密密钥，建议修改
+ADMIN_PASSWORD = _env("ADMIN_PASSWORD", "admin123")      # 后台登录密码
+ADMIN_SECRET = _env("ADMIN_SECRET", "api-admin-db")      # 会话加密密钥，建议修改
 # 部署 HTTPS 后把 ADMIN_COOKIE_SECURE 设为 1（生产环境默认开启），Cookie 将带 Secure 标识
 ADMIN_COOKIE_SECURE = _env_bool("ADMIN_COOKIE_SECURE", IS_PROD)      # 后台 Cookie 是否仅 HTTPS 传输
 PORTAL_SECRET = _env("PORTAL_SECRET", ADMIN_SECRET + ".portal")      # 用户端会话加密密钥，默认由后台密钥派生
@@ -85,7 +84,7 @@ GLOBAL_QPS_LIMIT = _env_int("GLOBAL_QPS_LIMIT", 0)                    # 全站 Q
 
 # ---------------- MySQL 连接 ----------------
 DB_USER = _env("DB_USER", "root")     # 数据库账号
-DB_PWD = _env("DB_PWD", "5454294!")   # 数据库密码
+DB_PWD = _env("DB_PWD", "输入数据库密码")   # 数据库密码
 DB_HOST = _env("DB_HOST", "127.0.0.1")  # 数据库地址，支持域名/IP
 DB_PORT = _env("DB_PORT", "3306")     # 数据库端口
 DB_NAME = _env("DB_NAME", "my_api_db")  # 数据库名称
