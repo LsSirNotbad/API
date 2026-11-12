@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>登录与申请 - API 用户中心</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%234f46e5'/%3E%3Cpath d='M25 20 13 32l12 12M39 20l12 12-12 12M36 14 28 50' fill='none' stroke='white' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{--blue:#4f46e5;--blue2:#2563eb;--ink:#172033;--muted:#697586;--line:#e5eaf2}*{box-sizing:border-box;margin:0;padding:0}body{min-height:100vh;padding:32px 20px;display:grid;place-items:center;background:linear-gradient(135deg,#eef2ff 0%,#f8fbff 48%,#e0f2fe 100%);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;position:relative;isolation:isolate}body:before{content:"";position:fixed;z-index:-2;width:620px;height:620px;left:-180px;top:-230px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.25),rgba(99,102,241,0) 68%);pointer-events:none}body:after{content:"";position:fixed;z-index:-1;inset:0;background:radial-gradient(circle at 88% 18%,rgba(56,189,248,.18),transparent 28%),radial-gradient(circle at 75% 90%,rgba(129,140,248,.16),transparent 32%),radial-gradient(rgba(79,70,229,.08) .7px,transparent .7px);background-size:auto,auto,24px 24px;pointer-events:none}.shell{width:min(940px,100%);height:640px;min-height:640px;display:grid;grid-template-columns:.9fr 1.1fr;background:rgba(255,255,255,.86);backdrop-filter:blur(22px);border:1px solid rgba(255,255,255,.9);border-radius:26px;overflow:hidden;box-shadow:0 30px 90px rgba(45,64,110,.18),0 4px 18px rgba(79,70,229,.06)}.intro{padding:48px 40px;color:#fff;background:linear-gradient(145deg,#312e81,#4f46e5 58%,#2563eb);position:relative}.intro:after{content:"";position:absolute;width:220px;height:220px;border:1px solid rgba(255,255,255,.18);border-radius:50%;right:-100px;bottom:-70px;box-shadow:0 0 0 42px rgba(255,255,255,.04)}.brand{display:flex;align-items:center;gap:11px;font-weight:750;letter-spacing:.3px}.logo{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:rgba(255,255,255,.17);border:1px solid rgba(255,255,255,.2);font-size:13px}.intro h1{font-size:31px;line-height:1.28;margin:72px 0 18px;letter-spacing:-.6px}.intro p{font-size:14px;line-height:1.9;color:#dbe4ff}.points{margin-top:42px;display:grid;gap:18px}.point{display:flex;gap:12px;align-items:flex-start;font-size:13px;line-height:1.65;color:#e5eaff}.num{flex:none;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.15);font-size:12px}.form-side{height:640px;padding:46px 44px 32px;display:flex;flex-direction:column;justify-content:flex-start;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#d7ddf0 transparent}.form-side h2{font-size:24px;margin-bottom:7px}.sub{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:22px}.tabs{display:flex;background:#f1f4f9;padding:4px;border-radius:11px;margin-bottom:22px}.tabs button{flex:1;border:0;background:transparent;padding:10px;border-radius:8px;cursor:pointer;color:#667085;font:inherit}.tabs button.active{background:#fff;color:var(--blue);font-weight:650;box-shadow:0 2px 7px #dce2ec}.field{margin-bottom:15px}.field label{display:block;font-size:13px;margin-bottom:7px;color:#475467}.input-row{display:flex;gap:9px}.field input{width:100%;height:44px;border:1px solid #d7dfea;border-radius:10px;padding:0 12px;font:inherit;outline:none;background:#fff;transition:.2s}.field input:focus{border-color:#6366f1;box-shadow:0 0 0 3px #eef0ff}.code-btn{flex:none;width:126px;border:1px solid #d9ddf7;background:#f5f5ff;color:#4f46e5;border-radius:10px;font:inherit;font-size:12px;cursor:pointer}.code-btn:disabled{cursor:not-allowed;color:#98a2b3;background:#f5f6f8}.btn{width:100%;height:45px;border:0;border-radius:10px;background:linear-gradient(100deg,var(--blue),var(--blue2));color:#fff;font:inherit;font-weight:650;cursor:pointer;box-shadow:0 8px 20px rgba(79,70,229,.18)}.btn:disabled{opacity:.6;cursor:not-allowed}.forgot-link,.back-link{display:block;margin:12px auto 0;border:0;background:transparent;color:var(--blue);font:inherit;font-size:12px;cursor:pointer;padding:4px 8px}.forgot-link:hover,.back-link:hover{text-decoration:underline}.back-link{margin-top:14px;color:#667085}.remember{display:flex;align-items:center;gap:8px;margin:2px 0 16px;color:#667085;font-size:12px;line-height:1.6;cursor:pointer}.remember input{width:15px;height:15px;margin:0;accent-color:var(--blue)}.remember small{margin-left:auto;color:#98a2b3}.agree{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:#667085;line-height:1.6;margin:3px 0 15px}.agree input{margin-top:4px}.agree summary{cursor:pointer;color:var(--blue)}.terms{margin:0 0 16px 20px;font-size:12px;color:#667085;line-height:1.8}.msg{display:none;padding:11px 13px;border-radius:9px;font-size:13px;line-height:1.6;margin-top:15px}.msg.show{display:block}.msg.ok{background:#ecfdf3;color:#067647}.msg.bad{background:#fef3f2;color:#b42318}.foot{text-align:center;color:#98a2b3;font-size:12px;margin-top:17px}@media(max-width:760px){body{padding:16px}.shell{grid-template-columns:1fr;height:auto;min-height:0;border-radius:20px}.intro{padding:28px}.intro h1{font-size:25px;margin:30px 0 12px}.points{display:none}.form-side{height:600px;min-height:600px;padding:28px 24px}.intro p{font-size:13px}}@media(max-width:400px){.input-row{flex-direction:column}.code-btn{width:100%;height:40px}}
+  .captcha-row{display:flex;gap:8px;align-items:center}
+  .captcha-row img{flex:none;width:160px;height:50px;border:1px solid var(--line);border-radius:8px;cursor:pointer;background:#f6f8fc;object-fit:contain;display:block;font-size:12px;color:#98a2b3;text-align:center;line-height:50px}
+  .captcha-row input{flex:1;min-width:0}
+  /* 整体略作缩小，保证创建/找回表单无需滚动即可完整显示 */
+  .shell{height:632px;min-height:632px}
+  .intro{padding:36px 34px}
+  .intro h1{font-size:28px;margin:52px 0 16px}
+  .points{margin-top:30px;gap:14px}
+  .form-side{height:632px;padding:28px 38px 20px}
+  .form-side h2{font-size:22px}
+  .sub{margin-bottom:12px}
+  .tabs{margin-bottom:14px}
+  .field{margin-bottom:10px}
+  .field label{margin-bottom:6px}
+  .field input{height:42px}
+  .btn{height:44px}
+  .agree{margin:2px 0 10px}
+  .terms{margin-bottom:12px}
+  .terms[open]{max-height:104px;overflow:auto}
+  .msg{margin-top:12px}
+  .foot{margin-top:12px}
+  @media(max-width:760px){.shell{height:auto;min-height:0}.form-side{height:600px;min-height:600px;padding:28px 24px}.intro{padding:28px}}
+  .input-row .code-btn{width:120px}
+</style>
+</head>
+<body>
+<main class="shell">
+  <aside class="intro">
+    <div class="brand"><span class="logo">API</span><span>API 用户中心</span></div>
+    <h1>简单几步，<br>开始使用接口服务</h1>
+    <p>无需了解复杂部署。完成邮箱验证后，系统会自动审核申请并发放你的专属 Token。</p>
+    <div class="points">
+      <div class="point"><span class="num">1</span><span>验证常用邮箱，验证码仅用于本次申请</span></div>
+      <div class="point"><span class="num">2</span><span>自动审核，审核结果与 Token 发送到邮箱</span></div>
+      <div class="point"><span class="num">3</span><span>登录控制台，在新手文档中直接测试接口</span></div>
+    </div>
+  </aside>
+  <section class="form-side">
+    <h2 id="formTitle">欢迎回来</h2><p class="sub" id="formSub">登录后管理 Token、额度与调用记录。</p>
+    <div class="tabs"><button id="loginTab" class="active" onclick="switchMode('login')">登 录</button><button id="registerTab" onclick="switchMode('register')">申请账号</button></div>
+    <div id="loginForm" autocomplete="off">
+      <div class="field"><label for="loginEmail">邮箱</label><input id="loginEmail" type="email" autocomplete="off" data-lpignore="true" data-1p-ignore="true" required maxlength="190" placeholder="you@example.com" onkeydown="if(event.key==='Enter')submitLogin(event)"></div>
+      <div class="field"><label for="loginPassword">密码</label><input id="loginPassword" type="password" autocomplete="off" data-lpignore="true" data-1p-ignore="true" maxlength="128" placeholder="输入登录密码" onkeydown="if(event.key==='Enter')submitLogin(event)"></div>
+      <label class="remember"><input id="rememberLogin" type="checkbox" onchange="toggleRemember()"><span>记住密码</span><small>本站凭据 · 30 天内可直接登录</small></label>
+      <button class="btn" id="loginBtn" type="button" onclick="submitLogin(event)">登录控制台</button>
+      <button class="forgot-link" type="button" onclick="switchMode('forgot')">忘记密码？通过邮箱验证码重置</button>
+    </div>
+    <form id="registerForm" style="display:none" onsubmit="submitRegister(event)">
+      <div class="field"><label for="regEmail">常用邮箱</label><input id="regEmail" type="email" autocomplete="email" required maxlength="190" placeholder="用于接收验证码和 Token"></div>
+      <div class="field"><label for="regCaptcha">图形验证码</label><div class="captcha-row"><img id="regCaptchaImg" alt="获取验证码" onclick="loadCaptcha('register')" title="点击刷新验证码"><input id="regCaptcha" inputmode="numeric" pattern="\d{1,3}" maxlength="3" placeholder="计算结果"></div></div>
+      <div class="field"><label for="regCode">邮箱验证码</label><div class="input-row"><input id="regCode" inputmode="numeric" pattern="\d{6}" required maxlength="6" placeholder="6 位验证码"><button class="code-btn" id="sendCodeBtn" type="button" onclick="sendCode('register')">获取验证码</button></div></div>
+      <div class="field"><label for="regPassword">设置密码</label><input id="regPassword" type="password" autocomplete="new-password" required minlength="8" maxlength="128" placeholder="至少 8 位字符"></div>
+      <label class="agree"><input id="agreement" type="checkbox" required><span>我已阅读并同意下方用户协议</span></label>
+      <details class="terms"><summary>用户协议</summary><p>本平台按现状提供接口服务。用户不得利用接口从事违法违规、攻击、爬取账号或高频滥用行为。平台可对异常账号或 Token 采取限流、封禁措施。</p><p>因第三方数据源或本平台故障导致的任何损失，由用户自行承担，本平台不承担连带责任。用户应妥善保管 Token，泄露后请立即重置。</p></details>
+      <button class="btn" type="submit">验证并提交申请</button>
+    </form>
+    <form id="forgotForm" style="display:none" onsubmit="submitReset(event)">
+      <div class="field"><label for="resetEmail">注册邮箱</label><input id="resetEmail" type="email" autocomplete="email" required maxlength="190" placeholder="输入已注册的邮箱"></div>
+      <div class="field"><label for="resetCaptcha">图形验证码</label><div class="captcha-row"><img id="resetCaptchaImg" alt="获取验证码" onclick="loadCaptcha('reset')" title="点击刷新验证码"><input id="resetCaptcha" inputmode="numeric" pattern="\d{1,3}" maxlength="3" placeholder="计算结果"></div></div>
+      <div class="field"><label for="resetCode">邮箱验证码</label><div class="input-row"><input id="resetCode" inputmode="numeric" pattern="\d{6}" required maxlength="6" placeholder="6 位验证码"><button class="code-btn" id="resetCodeBtn" type="button" onclick="sendCode('reset')">获取验证码</button></div></div>
+      <div class="field"><label for="resetPassword">设置新密码</label><input id="resetPassword" type="password" autocomplete="new-password" required minlength="8" maxlength="128" placeholder="至少 8 位字符"></div>
+      <button class="btn" type="submit">验证并重置密码</button>
+      <button class="back-link" type="button" onclick="switchMode('login')">← 返回登录</button>
+    </form>
+    <div id="msg" class="msg" role="status"></div><div class="foot" id="formFoot">登录即表示你同意遵守平台使用规范 · <a href="/docs/preview">查看接口预览（游客）</a></div>
+  </section>
+</main>
+<script>
+const $=s=>document.querySelector(s);let busy=false;const codeTimers={};const captchaState={register:'',reset:''};
+async function loadCaptcha(purpose){
+  const register=purpose==='register',img=$(register?'#regCaptchaImg':'#resetCaptchaImg');
+  captchaState[purpose]='';img.removeAttribute('src');img.alt='加载中';
+  const ctrl=typeof AbortController!=='undefined'?new AbortController():null;
+  const timer=ctrl?setTimeout(()=>ctrl.abort(),8000):null;
+  try{
+    const res=await fetch('/api/portal/captcha?t='+Date.now(),{credentials:'same-origin',cache:'no-store',signal:ctrl?ctrl.signal:undefined});
+    const data=await res.json();
+    if(!res.ok||!data.image_url)throw new Error(data.msg||'验证码加载失败');
+    captchaState[purpose]=data.captcha_id;
+    img.src=data.image_url;img.alt='';
+    $(register?'#regCaptcha':'#resetCaptcha').value='';
+  }catch(_){
+    captchaState[purpose]='';
+    img.alt='点击重新获取';
+  }finally{if(timer)clearTimeout(timer)}
+}
+function switchMode(mode){
+  const login=mode==='login',register=mode==='register',forgot=mode==='forgot';
+  $('#loginTab').classList.toggle('active',login);
+  $('#registerTab').classList.toggle('active',register);
+  $('#loginForm').style.display=login?'block':'none';
+  $('#registerForm').style.display=register?'block':'none';
+  $('#forgotForm').style.display=forgot?'block':'none';
+  $('#formTitle').textContent=login?'欢迎回来':register?'创建你的账号':'重置登录密码';
+  $('#formSub').textContent=login?'登录后管理 Token、额度与调用记录。':register?'先获取邮箱验证码，再填写密码提交申请。':'验证注册邮箱后，即可设置新的登录密码。';
+  $('#formFoot').innerHTML=register?'邮箱验证通过后才会提交申请，请勿泄露验证码':forgot?'验证码仅用于本次密码重置，请勿泄露':'登录即表示你同意遵守平台使用规范 · <a href="/docs/preview">查看接口预览（游客）</a>';
+  if(forgot&&!$('#resetEmail').value)$('#resetEmail').value=$('#loginEmail').value.trim();
+  if(register||forgot)loadCaptcha(mode);
+  showMsg('','');
+}
+function showMsg(text,type){const el=$('#msg');el.textContent=text;el.className='msg'+(text?' show '+type:'')}
+async function post(url,body){const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(body)});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.msg||data.detail||`请求失败（${res.status}）`);return data}
+function startCountdown(btn,seconds){clearInterval(codeTimers[btn.id]);let left=Math.max(10,Number(seconds)||60);btn.disabled=true;btn.textContent=`${left} 秒后重发`;codeTimers[btn.id]=setInterval(()=>{left--;btn.textContent=left>0?`${left} 秒后重发`:'重新获取';if(left<=0){clearInterval(codeTimers[btn.id]);btn.disabled=false}},1000)}
+function resetCountdown(btn){clearInterval(codeTimers[btn.id]);btn.disabled=false;btn.textContent='获取验证码'}
+async function sendCode(purpose){
+  if(busy)return;
+  const register=purpose==='register',emailInput=$(register?'#regEmail':'#resetEmail'),btn=$(register?'#sendCodeBtn':'#resetCodeBtn'),codeInput=$(register?'#regCode':'#resetCode'),captchaInput=$(register?'#regCaptcha':'#resetCaptcha');
+  const email=emailInput.value.trim(),captcha=captchaInput.value.trim();
+  if(!email){showMsg('请先填写邮箱','bad');emailInput.focus();return}
+  if(!captchaState[purpose]){showMsg('图形验证码已失效，请点击刷新','bad');loadCaptcha(purpose);return}
+  if(!captcha){showMsg('请先填写图形验证码的计算结果','bad');captchaInput.focus();return}
+  busy=true;btn.disabled=true;showMsg('','');
+  try{
+    const r=await post('/api/portal/email-code',{email,purpose,captcha_id:captchaState[purpose],captcha});
+    showMsg(r.msg+(r.daily_left===0?'（该邮箱 24 小时内额度已用完）':''),'ok');
+    startCountdown(btn,r.resend_seconds);codeInput.focus();
+  }
+  catch(err){showMsg(err.message,'bad');btn.disabled=false}
+  finally{loadCaptcha(purpose);busy=false}
+}
+function clearRememberStore(){
+  localStorage.removeItem('portal_remember_email');
+  localStorage.removeItem('portal_remember_v2');
+  localStorage.removeItem('portal_remember_password');
+}
+function updateRememberHint(){
+  const remembered=localStorage.getItem('portal_remember_v2')==='1';
+  $('#loginPassword').placeholder=remembered?'已保存本站登录凭据，可直接点击登录':'输入登录密码';
+}
+async function submitLogin(e){
+  e.preventDefault();
+  if(busy)return;
+  const email=$('#loginEmail').value.trim(),password=$('#loginPassword').value,remember=$('#rememberLogin').checked;
+  const useRemember=remember&&!password&&localStorage.getItem('portal_remember_v2')==='1';
+  if(!email){showMsg('请输入登录邮箱','bad');$('#loginEmail').focus();return}
+  if(!password&&!useRemember){showMsg('请输入登录密码','bad');$('#loginPassword').focus();return}
+  busy=true;showMsg('','');
+  const btn=$('#loginBtn');btn.disabled=true;
+  try{
+    await post('/api/portal/login',{email,password,remember,use_remember:useRemember});
+    if(remember){
+      localStorage.setItem('portal_remember_email',email);
+      localStorage.setItem('portal_remember_v2','1');
+      localStorage.removeItem('portal_remember_password');
+    }else clearRememberStore();
+    const next=new URLSearchParams(location.search).get('next')||'/portal';
+    location.href=next.startsWith('/')&&!next.startsWith('//')?next:'/portal';
+  }catch(err){
+    if(useRemember){
+      localStorage.removeItem('portal_remember_v2');
+      $('#rememberLogin').checked=false;
+      updateRememberHint();
+      post('/api/portal/remember/clear',{}).catch(()=>{});
+    }
+    showMsg(err.message,'bad');
+  }finally{busy=false;btn.disabled=false}
+}
+function toggleRemember(){
+  if($('#rememberLogin').checked){updateRememberHint();return}
+  clearRememberStore();
+  $('#loginPassword').value='';
+  updateRememberHint();
+  post('/api/portal/remember/clear',{}).catch(()=>{});
+}
+function restoreLogin(){
+  const remembered=localStorage.getItem('portal_remember_v2')==='1';
+  $('#rememberLogin').checked=remembered;
+  $('#loginEmail').value=localStorage.getItem('portal_remember_email')||'';
+  updateRememberHint();
+}
+restoreLogin();
+/* 页面加载即预取两套图形验证码，避免首次进入申请/找回时出现“加载中” */
+loadCaptcha('register');loadCaptcha('reset');
+async function submitRegister(e){e.preventDefault();if(busy)return;busy=true;showMsg('','');const btn=e.target.querySelector('[type=submit]');btn.disabled=true;try{const r=await post('/api/portal/register',{email:$('#regEmail').value,password:$('#regPassword').value,code:$('#regCode').value,agreement:$('#agreement').checked});$('#registerForm').reset();resetCountdown($('#sendCodeBtn'));showMsg(r.msg,'ok')}catch(err){showMsg(err.message,'bad')}finally{busy=false;btn.disabled=false}}
+async function submitReset(e){e.preventDefault();if(busy)return;busy=true;showMsg('','');const btn=e.target.querySelector('[type=submit]');btn.disabled=true;const email=$('#resetEmail').value.trim();try{const r=await post('/api/portal/reset-password',{email,password:$('#resetPassword').value,code:$('#resetCode').value});$('#forgotForm').reset();resetCountdown($('#resetCodeBtn'));$('#loginEmail').value=email;switchMode('login');showMsg(r.msg,'ok');$('#loginPassword').focus()}catch(err){showMsg(err.message,'bad')}finally{busy=false;btn.disabled=false}}
+</script>
+</body></html>

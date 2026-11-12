@@ -1,0 +1,56 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: my-api-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?请在 .env 中设置 MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME:-my_api_db}
+      MYSQL_USER: ${DB_USER:-api_user}
+      MYSQL_PASSWORD: ${DB_PWD:?请在 .env 中设置 DB_PWD}
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    ports:
+      - "${MYSQL_BIND_ADDR:-127.0.0.1}:${MYSQL_HOST_PORT:-3306}:3306"
+
+  api:
+    build: .
+    container_name: my-api
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      APP_ENV: prod
+      DOCS_ENABLED: ${DOCS_ENABLED:-0}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-api_user}
+      DB_PWD: ${DB_PWD:?请在 .env 中设置 DB_PWD}
+      DB_NAME: ${DB_NAME:-my_api_db}
+      API_TOKEN: ${API_TOKEN:?请在 .env 中设置 API_TOKEN}
+      ADMIN_USER: ${ADMIN_USER:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?请在 .env 中设置 ADMIN_PASSWORD}
+      ADMIN_SECRET: ${ADMIN_SECRET:?请在 .env 中设置 ADMIN_SECRET}
+      ADMIN_COOKIE_SECURE: "1"
+      TZ: Asia/Shanghai
+    ports:
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./backups:/app/backups
+      - ./exports:/app/exports
+      - ./data:/app/data
+      - ./openSSL:/app/openSSL:ro
+
+volumes:
+  mysql_data:

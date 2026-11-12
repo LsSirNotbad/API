@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>新手使用指南 - API 用户中心</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%234f46e5'/%3E%3Cpath d='M25 20 13 32l12 12M39 20l12 12-12 12M36 14 28 50' fill='none' stroke='white' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{--primary:#4f46e5;--primary-dark:#3730a3;--ink:#172033;--muted:#687588;--line:#e2e8f0;--bg:#f6f8fc;--success:#067647;--danger:#b42318}*{box-sizing:border-box;margin:0;padding:0}[hidden]{display:none!important}body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;line-height:1.5}button,input,select{font:inherit}.topbar{background:#fff;border-bottom:1px solid var(--line)}.top-inner{width:min(1240px,calc(100% - 34px));min-height:68px;margin:auto;display:flex;align-items:center;gap:20px}.brand{display:flex;align-items:center;gap:10px;font-weight:750;white-space:nowrap;color:var(--ink);text-decoration:none}.logo{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(135deg,#4f46e5,#2563eb);color:#fff;font-size:11px}.top-links{display:flex;align-items:center;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none}.top-links::-webkit-scrollbar{display:none}.top-links a{display:inline-flex;align-items:center;gap:6px;color:#526075;text-decoration:none;font-size:13px;padding:9px 10px;border-radius:8px;white-space:nowrap}.top-links a:hover{background:#f0f2ff;color:var(--primary)}.top-links a.active{background:#eef0ff;color:var(--primary);font-weight:650}.top-divider{width:1px;height:20px;background:var(--line);margin:0 4px;flex:0 0 auto}.nav-icon{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.wrap{width:min(1200px,calc(100% - 34px));margin:0 auto;padding:28px 0 48px}.card{background:#fff;border:1px solid var(--line);border-radius:17px;box-shadow:0 4px 18px rgba(32,51,84,.035)}.hero{padding:30px;margin-bottom:18px;background:linear-gradient(130deg,#fff 45%,#f2f4ff)}.eyebrow{color:var(--primary);font-size:12px;font-weight:700;letter-spacing:.08em;margin-bottom:9px}.hero h1{font-size:28px;line-height:1.3;margin-bottom:10px}.hero p{color:var(--muted);font-size:14px;line-height:1.8;max-width:760px}.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:20px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #d8e0eb;background:#fff;color:#344054;border-radius:10px;padding:10px 17px;cursor:pointer;font-size:13px;text-decoration:none;line-height:1.5}.btn:hover{border-color:#b8c0f1;color:var(--primary)}.btn.primary{background:linear-gradient(100deg,#4f46e5,#2563eb);border-color:transparent;color:#fff}.btn.primary:hover{color:#fff;filter:brightness(.97)}.btn.soft{background:#eef0ff;border-color:#e0e3ff;color:var(--primary)}.btn.small{padding:7px 11px;font-size:12px;border-radius:8px}.btn:disabled{opacity:.5;cursor:not-allowed;filter:none}.guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.guide-card{padding:22px}.guide-card .number{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:#eef0ff;color:var(--primary);font-weight:750;font-size:13px;margin-bottom:15px}.guide-card h2{font-size:16px;margin-bottom:8px}.guide-card p{font-size:13px;color:var(--muted);line-height:1.8}.notice{margin-top:18px;padding:15px 17px;border:1px solid #dbe4ff;background:#f5f7ff;border-radius:12px;color:#475467;font-size:13px;line-height:1.75}.notice strong{color:var(--primary-dark)}.quick-layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}.quick-card{padding:24px}.quick-card h2{font-size:17px;margin-bottom:9px}.quick-card>p{font-size:13px;color:var(--muted);line-height:1.75;margin-bottom:18px}.quick-steps{list-style:none;display:grid;gap:15px}.quick-steps li{display:grid;grid-template-columns:25px 1fr;gap:10px;color:#475467;font-size:13px;line-height:1.7}.quick-steps span{display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:#eef0ff;color:var(--primary);font-size:11px;font-weight:700;margin-top:1px}.field-label{display:block;font-size:12px;color:#475467;margin-bottom:7px}.select,.search{width:100%;height:42px;border:1px solid #d8e0eb;border-radius:9px;padding:0 12px;background:#fff;color:var(--ink);outline:none}.select:focus,.search:focus{border-color:#6366f1;box-shadow:0 0 0 3px #eef0ff}.quick-generate{width:100%;margin-top:12px}.catalog-intro{padding:0 2px;margin-bottom:18px}.catalog-intro h1{font-size:26px;margin-bottom:7px}.catalog-intro p{font-size:13px;color:var(--muted);line-height:1.75}.mode-badge{display:inline-block;margin-top:10px;padding:5px 9px;border-radius:7px;background:#eef0ff;color:var(--primary);font-size:11px}.catalog{padding:22px}.catalog-tools{display:flex;align-items:center;justify-content:space-between;gap:14px}.catalog-tools .search{width:min(390px,100%)}.catalog-count{font-size:12px;color:var(--muted);white-space:nowrap}.endpoint-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}.endpoint{display:flex;flex-direction:column;align-items:flex-start;min-height:190px;border:1px solid var(--line);background:linear-gradient(145deg,#fff,#fafbff);text-align:left;padding:20px;border-radius:14px;cursor:pointer;color:#344054;transition:.18s}.endpoint:hover{border-color:#bfc5f5;transform:translateY(-2px);box-shadow:0 8px 22px rgba(52,64,120,.08)}.method{display:inline-block;padding:4px 8px;border-radius:6px;background:#eef0ff;color:var(--primary);font:700 10px ui-monospace,Consolas,monospace}.endpoint .method{margin-bottom:13px}.endpoint b{display:block;font-size:16px;color:var(--ink);margin-bottom:8px}.endpoint-path{display:block;width:100%;font:11px ui-monospace,Consolas,monospace;color:#7b8496;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.endpoint-desc{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:11px;color:#697586;font-size:12px;line-height:1.7}.enter{margin-top:auto;padding-top:16px;color:var(--primary);font-size:12px;font-weight:650}.empty{grid-column:1/-1;padding:35px 12px;text-align:center;color:#98a2b3;font-size:13px}.content{padding:22px 24px}.back-btn{display:inline-flex;align-items:center;border:0;background:#f0f2ff;color:var(--primary);border-radius:8px;padding:7px 10px;cursor:pointer;font-size:12px;margin-bottom:14px}.endpoint-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.endpoint-head h2{font-size:22px}.desc{font-size:13px;color:var(--muted);line-height:1.75;margin-top:8px}.path{display:inline-block;max-width:100%;margin-top:10px;padding:6px 9px;border-radius:7px;background:#f3f5f9;color:#667085;font:12px ui-monospace,Consolas,monospace;word-break:break-all}.doc-section{margin-top:18px;padding-top:17px;border-top:1px solid var(--line)}.section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px}.section-heading h3{font-size:15px}.section-note{font-size:11px;color:var(--muted);line-height:1.6}.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:11px}table{width:100%;border-collapse:collapse;font-size:12px;min-width:620px}th,td{text-align:left;padding:8px 11px;border-bottom:1px solid #edf1f5;vertical-align:top;line-height:1.55}th{background:#f8fafc;color:#667085;font-weight:650;white-space:nowrap}td{color:#3e4c60}tbody tr:last-child td{border-bottom:0}td code{color:#344054;font:12px ui-monospace,Consolas,monospace;word-break:break-all}.type-tag{display:inline-block;padding:2px 6px;border-radius:5px;background:#f0f2ff;color:var(--primary);font:11px ui-monospace,Consolas,monospace}.required{color:var(--danger)}.example-label{display:inline-flex;align-items:center;padding:5px 8px;border-radius:7px;background:#fff7e8;color:#92400e;font-size:11px}.example-label.document{background:#eef0ff;color:var(--primary)}.raw,.example,.code-block{max-height:400px;overflow:auto;padding:16px;border-radius:10px;background:#111827;color:#d1e7ff;font:12px/1.7 ui-monospace,Consolas,monospace;white-space:pre;tab-size:2}.example{max-height:320px;padding:12px 14px;line-height:1.55}.token-box{display:grid;grid-template-columns:minmax(220px,.8fr) minmax(260px,1.2fr);align-items:center;gap:7px 14px;margin-top:18px;padding:10px 12px;background:#f8fafc;border:1px solid var(--line);border-radius:10px}.token-label{display:flex;justify-content:space-between;align-items:center;gap:8px;min-width:0;font-size:11px;color:#475467}.auto{flex:0 0 auto;padding:2px 7px;border-radius:999px;background:#e6f8ef;color:var(--success);font-size:10px;line-height:1.5}.token-value{width:100%;min-width:0;height:34px;border:1px solid #d8e0eb;border-radius:7px;padding:0 10px;background:#fff;color:#5d6380;font:11px ui-monospace,Consolas,monospace}.token-box p{grid-column:1/-1;font-size:10px;color:#7b8496;line-height:1.5}.test-panel{margin-top:18px;padding:16px 18px;border:1px solid #dfe4f3;border-radius:12px;background:#f8faff;scroll-margin-top:14px}.test-panel>h3{font-size:16px;margin-bottom:4px}.test-panel>.desc{margin:0 0 12px;font-size:12px;line-height:1.6}.params{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px}.param.full{grid-column:1/-1}.param label{display:block;font-size:12px;color:#475467;margin-bottom:5px}.param input,.param select{width:100%;min-width:0;height:38px;border:1px solid #d7dfea;border-radius:8px;padding:0 11px;background:#fff;outline:none}.param input:focus,.param select:focus{border-color:#6366f1;box-shadow:0 0 0 3px #eef0ff}.param small{display:block;color:#8a94a6;font-size:11px;line-height:1.45;margin-top:4px}.no-params{padding:10px 12px;border:1px solid #e7ecf3;background:#f1f5f9;border-radius:8px;color:#667085;font-size:12px}.test-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.test-option{display:flex;flex-direction:column;min-width:0;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff}.test-option h4{font-size:13px;margin-bottom:4px}.test-option p{font-size:11px;color:var(--muted);line-height:1.55;min-height:0;margin-bottom:10px}.test-option.sandbox{border-color:#bde5d1;background:#f4fcf7}.test-option.sandbox h4{color:var(--success)}.test-option .btn{width:100%;min-height:38px;margin-top:auto;font-weight:650}.sandbox-btn{background:#e6f8ef;border-color:#bde5d1;color:var(--success)}.sandbox-btn:hover{background:#d9f4e5;border-color:#9bd8b8;color:#05603c}.result{min-width:0;margin-top:16px;border:1px solid #dfe5ee;border-radius:12px;padding:14px 16px;background:#fff;box-shadow:0 3px 12px rgba(32,51,84,.045)}#sandboxResult{border-color:#cde8da;background:#fbfefc}.result-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #e9eef4}.result-head h3{font-size:14px}.result-meta{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;background:#ecfdf3;color:var(--success);font-size:11px;line-height:1.5;white-space:nowrap}.result-meta.bad{background:#fef3f2;color:var(--danger)}.result-tip{padding:9px 11px;border:1px solid #cdebdc;border-radius:8px;background:#f0fdf3;color:var(--success);font-size:12px;line-height:1.55;margin-bottom:10px}.result-tip.bad{background:#fef3f2;border-color:#fecdca;color:var(--danger)}.sandbox-params{margin-bottom:10px}.sandbox-params summary{cursor:pointer;color:var(--primary);font-size:11px;margin-bottom:6px}.sandbox-params pre{max-height:160px;overflow:auto;padding:10px;border:1px solid var(--line);background:#f8fafc;border-radius:8px;color:#475467;font:11px/1.55 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-word}.easy{display:grid;gap:6px}.result-row{display:grid;grid-template-columns:minmax(90px,.25fr) minmax(0,1fr);gap:10px;padding:9px 11px;border:1px solid #e8edf3;border-radius:8px;background:#f8fafc;font-size:12px;line-height:1.55}.result-row dt{color:#697586;word-break:break-word}.result-row dd{color:#25324a;white-space:pre-wrap;word-break:break-word}.raw-toggle{margin-top:10px;padding:3px 0;border:0;background:none;font-size:11px;font-weight:650;color:var(--primary);cursor:pointer}.raw{display:none;max-height:280px;margin-top:8px;padding:12px;border:1px solid #263448;border-radius:8px;background:#101828;font-size:11px;line-height:1.55;white-space:pre-wrap;word-break:break-word}.raw.show{display:block}.code-section{scroll-margin-top:18px}.code-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}.code-tabs{display:flex;gap:5px;flex-wrap:wrap}.code-tab{border:1px solid var(--line);background:#fff;color:#667085;border-radius:8px;padding:7px 10px;font-size:12px;cursor:pointer}.code-tab.active{border-color:#c7cbf8;background:#eef0ff;color:var(--primary);font-weight:650}.code-actions{display:flex;gap:8px}.code-block{min-height:210px;margin:0;white-space:pre;overflow:auto}.code-help{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.7}.footer-note{text-align:center;color:#98a2b3;font-size:11px;margin-top:22px;line-height:1.7}.toast{position:fixed;right:22px;bottom:22px;z-index:20;max-width:min(390px,calc(100% - 32px));padding:12px 15px;border-radius:10px;background:#172033;color:#fff;box-shadow:0 10px 35px rgba(15,23,42,.22);font-size:12px;line-height:1.65;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translateY(0)}
+@media(max-width:1050px){.top-inner{gap:10px}.top-links a{padding:9px 8px}.endpoint-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:800px){.guide-grid{grid-template-columns:1fr}.quick-layout{grid-template-columns:1fr}.content{padding:18px}.test-options{grid-template-columns:1fr}.test-option p{min-height:0}.hero{padding:24px}}
+@media(max-width:650px){.top-inner{width:calc(100% - 20px);min-height:62px}.top-links{gap:1px}.top-links a{font-size:12px;padding:8px}.top-divider,.secondary-link{display:none}.wrap{width:calc(100% - 24px);padding-top:20px}.hero h1{font-size:24px}.catalog{padding:16px}.catalog-tools{align-items:flex-start;flex-direction:column}.catalog-tools .search{width:100%}.endpoint-list{grid-template-columns:1fr}.endpoint{min-height:175px}.params{grid-template-columns:1fr}.token-box{grid-template-columns:minmax(0,1fr);gap:8px}.token-label{align-items:flex-start;flex-wrap:wrap}.token-box p{grid-column:auto}.test-panel{padding:14px}.result{padding:12px}.result-head{align-items:flex-start;flex-wrap:wrap;gap:8px}.result-meta{white-space:normal}.result-row{grid-template-columns:1fr;gap:4px}.code-toolbar{align-items:flex-start}.code-actions{width:100%}.code-actions .btn{flex:1}.section-heading{align-items:flex-start;flex-direction:column}.hero .actions .btn{flex:1}.brand-text{display:none}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="top-inner">
+    <a class="brand" href="/docs?view=guide"><span class="logo">API</span><span class="brand-text">接口中心</span></a>
+    <nav class="top-links" aria-label="接口文档导航">
+      <a href="/docs?view=guide" data-view="guide">新手指南</a>
+      <a href="/docs?view=catalog" data-view="catalog">接口中心</a>
+      <span class="top-divider" aria-hidden="true"></span>
+      <a class="secondary-link" href="/portal"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>返回控制台</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+  <section class="view" id="guideView">
+    <div class="card hero">
+      <div class="eyebrow">START HERE</div>
+      <h1>新手使用指南</h1>
+      <p>先了解接口参数和返回结构，再用沙盒熟悉结果，最后在需要时发送真实测试。真实测试与本地模拟彼此独立，你可以按自己的节奏完成接入。</p>
+      <div class="actions"><a class="btn primary" href="/docs?view=catalog">进入接口中心</a></div>
+    </div>
+    <div class="guide-grid">
+      <article class="card guide-card"><span class="number">1</span><h2>选择接口并阅读文档</h2><p>从接口目录进入独立详情页，查看入参名称、类型、是否必填、默认值，以及出参和响应示例。</p></article>
+      <article class="card guide-card"><span class="number">2</span><h2>先用沙盒验证流程</h2><p>沙盒只在浏览器本地生成模拟结果，不请求目标接口、不消耗额度，适合检查参数填写与理解返回结构。</p></article>
+      <article class="card guide-card"><span class="number">3</span><h2>生成代码或真实测试</h2><p>可复制 cURL、JavaScript Fetch、Python requests 示例；需要验证线上服务时，再单独点击“发送真实测试”。</p></article>
+    </div>
+    <div class="notice"><strong>凭证安全：</strong>网页只展示掩码 Token，所有生成的代码统一使用 <code>YOUR_TOKEN</code> 占位。请在自己的安全环境中替换，不要分享真实密钥。</div>
+  </section>
+
+  <section class="view" id="quickstartView" hidden>
+    <div class="card hero">
+      <div class="eyebrow">QUICKSTART</div>
+      <h1>快速接入与代码生成</h1>
+      <p>指定一个接口，即可进入代码生成区。系统会带上当前填写的参数，生成可复制示例，但不会把真实 Token 写入代码。</p>
+    </div>
+    <div class="quick-layout">
+      <section class="card quick-card"><h2>选择要接入的接口</h2><p>不会自动选择第一个接口。选择后进入详情页的代码区域，可继续调整参数和语言。</p><label class="field-label" for="quickEndpoint">目标接口</label><select class="select" id="quickEndpoint" disabled><option value="">正在加载接口...</option></select><button class="btn primary quick-generate" id="quickstartBtn" type="button" disabled>进入代码生成</button></section>
+      <section class="card quick-card"><h2>接入只需三步</h2><ol class="quick-steps"><li><span>1</span><div>在代码区选择 cURL、JavaScript Fetch 或 Python requests，并点击“生成代码”。</div></li><li><span>2</span><div>复制代码，将 <code>YOUR_TOKEN</code> 替换为你自己的 Token；真实密钥不会出现在页面代码中。</div></li><li><span>3</span><div>先检查请求路径和参数，再在你的开发环境运行。文档中的响应示例不是实时响应。</div></li></ol></section>
+    </div>
+  </section>
+
+  <section class="view" id="catalogView" hidden>
+    <div class="catalog-intro"><h1 id="catalogTitle">接口目录</h1><p id="catalogDesc">浏览可用接口，进入详情查看完整的入参、出参与响应示例。</p><span class="mode-badge" id="catalogModeBadge">文档浏览模式</span></div>
+    <section class="card catalog"><div class="catalog-tools"><input class="search" id="search" placeholder="搜索功能、路径，如：笑话、天气" aria-label="搜索接口"><span class="catalog-count" id="endpointCount">正在加载...</span></div><div class="endpoint-list" id="endpointList"><div class="empty">正在加载接口...</div></div></section>
+  </section>
+
+  <section class="card content view" id="testView" hidden>
+    <button class="back-btn" id="backBtn" type="button">← 返回接口目录</button>
+    <div class="endpoint-head"><span class="method" id="endpointMethod">GET</span><h2 id="endpointTitle">接口详情</h2></div>
+    <p class="desc" id="endpointDesc"></p><code class="path" id="endpointPath"></code>
+
+    <section class="doc-section">
+      <div class="section-heading"><h3>入参说明</h3><span class="section-note">默认值来自接口文档，实际请求以你填写的参数为准</span></div>
+      <div class="table-wrap"><table><thead><tr><th>名称</th><th>类型</th><th>必填</th><th>说明</th><th>默认值</th></tr></thead><tbody id="inputTable"></tbody></table></div>
+    </section>
+
+    <section class="doc-section">
+      <div class="section-heading"><h3>出参说明</h3><span class="section-note" id="outputNote"></span></div>
+      <div class="table-wrap"><table><thead><tr><th>名称</th><th>类型</th><th>说明</th></tr></thead><tbody id="outputTable"></tbody></table></div>
+    </section>
+
+    <section class="doc-section">
+      <div class="section-heading"><h3>响应示例</h3><span class="example-label" id="exampleLabel">结构示意，非真实响应</span></div>
+      <pre class="example" id="responseExample"></pre>
+    </section>
+
+    <div class="token-box"><div class="token-label"><span>真实测试访问凭证（由后台自动关联）</span><span class="auto" id="tokenState">正在关联</span></div><input class="token-value" id="tokenHint" readonly value="加载中..." aria-label="掩码 Token"><p>这里只显示掩码，不提供完整密钥。代码示例中的 Token 固定为 YOUR_TOKEN。</p></div>
+
+    <section class="test-panel" id="testPanel">
+      <h3>在线测试</h3><p class="desc">填写参数后，可自由选择本地沙盒或真实接口测试，两种操作不会互相触发。</p>
+      <form id="testForm">
+        <div class="params" id="params"></div>
+        <div class="test-options">
+          <div class="test-option sandbox"><h4>沙盒测试</h4><p>本地模拟，不请求目标接口、不消耗额度。结果由响应示例或通用结构生成，不代表真实返回。</p><button class="btn sandbox-btn" id="sandboxBtn" type="button">运行沙盒测试</button></div>
+          <div class="test-option"><h4>真实接口测试</h4><p>会请求目标接口，每次成功发送按平台规则计入累计调用额度，请确认参数后再发送。</p><button class="btn primary" id="testBtn" type="submit">发送真实测试</button></div>
+        </div>
+      </form>
+      <section class="result" id="sandboxResult" hidden><div class="result-head"><h3>沙盒模拟结果</h3><span class="result-meta" id="sandboxMeta">本地模拟</span></div><div class="result-tip" id="sandboxTip"></div><details class="sandbox-params"><summary>查看本次模拟参数</summary><pre id="sandboxParams"></pre></details><div class="easy" id="sandboxEasy"></div><button class="raw-toggle" type="button" onclick="toggleRaw('sandboxRaw',this)">查看 / 收起原始模拟数据</button><pre class="raw" id="sandboxRaw"></pre></section>
+      <section class="result" id="result" hidden><div class="result-head"><h3>真实接口返回结果</h3><span class="result-meta" id="resultMeta"></span></div><div class="result-tip" id="resultTip"></div><div class="easy" id="easyResult"></div><button class="raw-toggle" type="button" onclick="toggleRaw('rawResult',this)">查看 / 收起原始数据</button><pre class="raw" id="rawResult"></pre></section>
+    </section>
+
+    <section class="doc-section code-section" id="codePanel">
+      <div class="section-heading"><div><h3>接入代码</h3><span class="section-note">代码使用当前填写的参数，Token 仅为 YOUR_TOKEN 占位</span></div></div>
+      <div class="code-toolbar"><div class="code-tabs" role="tablist" aria-label="代码语言"><button class="code-tab active" type="button" data-lang="curl" role="tab" aria-selected="true" onclick="setCodeLanguage('curl')">cURL</button><button class="code-tab" type="button" data-lang="fetch" role="tab" aria-selected="false" onclick="setCodeLanguage('fetch')">JavaScript Fetch</button><button class="code-tab" type="button" data-lang="python" role="tab" aria-selected="false" onclick="setCodeLanguage('python')">Python requests</button></div><div class="code-actions"><button class="btn small soft" id="generateBtn" type="button">生成代码</button><button class="btn small" id="copyCodeBtn" type="button" disabled>复制代码</button></div></div>
+      <pre class="code-block"><code id="codeOutput">选择语言并点击“生成代码”</code></pre><p class="code-help">生成和复制均在本地完成，不会发送真实接口请求。代码生成后会尝试更新任务进度，进度更新失败不影响代码使用。</p>
+    </section>
+  </section>
+  <p class="footer-note">沙盒模拟不消耗额度；真实测试成功后，可返回控制台“任务中心”查看相应奖励。</p>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+const $=selector=>document.querySelector(selector);
+const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const allowedViews=['guide','catalog','test','quickstart'];
+const queryView=new URLSearchParams(location.search).get('view');
+const currentView=allowedViews.includes(queryView)?queryView:'guide';
+const viewTitles={guide:'新手使用指南',catalog:'接口目录',test:'在线测试目录',quickstart:'快速接入与代码生成'};
+const labels={type:'类型',city:'城市',keyword:'关键词',category:'分类',level:'程度',count:'数量',page:'页码',size:'每页数量',dynasty:'朝代',tag:'标签',num:'数量',name:'名称',author:'作者',title:'标题',id:'编号'};
+const keyLabels={code:'状态码',msg:'提示信息',data:'返回内容',title:'标题',content:'内容',name:'名字',author:'作者',dynasty:'朝代',category:'分类',time:'时间',url:'链接',city:'城市',weather:'天气',temperature:'温度',text:'文本',result:'结果',request_params:'模拟请求参数'};
+const genericOutputs=[{name:'code',type:'integer',description:'通用业务状态码'},{name:'msg',type:'string',description:'通用提示信息'},{name:'data',type:'any',description:'通用业务数据，具体内容因接口而异'}];
+let endpoints=[];
+let selected=null;
+let busy=false;
+let codeLanguage='curl';
+let codeGenerated=false;
+let toastTimer;
+
+async function api(url,options={}){
+  const response=await fetch(url,{credentials:'same-origin',...options});
+  const data=await response.json().catch(()=>({}));
+  if(response.status===401){location.href='/portal/login?next=/docs';throw new Error('请先登录')}
+  if(!response.ok)throw new Error(data.msg||data.detail||`请求失败（${response.status}）`);
+  return data;
+}
+
+function notify(message){
+  const toast=$('#toast');
+  toast.textContent=message;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>toast.classList.remove('show'),3600);
+}
+
+async function reportProgress(taskName){
+  try{
+    const response=await fetch(`/api/portal/tasks/${taskName}/complete`,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:'{}'});
+    if(!response.ok)throw new Error(`HTTP ${response.status}`);
+  }catch(error){
+    notify(`本地功能已完成，但任务进度更新失败（${error.message}），不影响本次结果。`);
+  }
+}
+
+function applyView(){
+  for(const id of ['guideView','catalogView','quickstartView','testView'])$('#'+id).hidden=true;
+  document.querySelectorAll('[data-view]').forEach(link=>{
+    const active=link.dataset.view===currentView;
+    link.classList.toggle('active',active);
+    if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');
+  });
+  document.title=`${viewTitles[currentView]} - API 用户中心`;
+  if(currentView==='guide')$('#guideView').hidden=false;
+  if(currentView==='quickstart')$('#quickstartView').hidden=false;
+  if(currentView==='catalog'||currentView==='test'){
+    $('#catalogView').hidden=false;
+    const testMode=currentView==='test';
+    $('#catalogTitle').textContent=testMode?'在线测试目录':'接口目录';
+    $('#catalogDesc').textContent=testMode?'选择接口后将直接定位到测试区，可运行本地沙盒，或单独发送真实测试。':'浏览可用接口，进入独立详情查看完整的入参、出参与响应示例。';
+    $('#catalogModeBadge').textContent=testMode?'在线测试模式 · 选卡直达测试区':'文档浏览模式';
+  }
+}
+
+async function init(){
+  applyView();
+  $('#search').addEventListener('input',renderEndpointList);
+  $('#quickEndpoint').addEventListener('change',()=>{$('#quickstartBtn').disabled=!$('#quickEndpoint').value});
+  $('#quickstartBtn').addEventListener('click',()=>{if($('#quickEndpoint').value)selectEndpoint($('#quickEndpoint').value,'code')});
+  $('#backBtn').addEventListener('click',showCurrentDirectory);
+  $('#testForm').addEventListener('submit',runRealTest);
+  $('#sandboxBtn').addEventListener('click',runSandbox);
+  $('#generateBtn').addEventListener('click',generateCode);
+  $('#copyCodeBtn').addEventListener('click',copyCode);
+  try{
+    const response=await api('/api/portal/docs/endpoints');
+    endpoints=Array.isArray(response.data)?response.data:[];
+    $('#tokenHint').value=response.token_hint||'Token 不可用';
+    $('#tokenState').textContent=response.token_ready?'已自动关联':'Token 不可用';
+    $('#tokenState').style.background=response.token_ready?'#e6f8ef':'#fef3f2';
+    $('#tokenState').style.color=response.token_ready?'#067647':'#b42318';
+    renderEndpointList();
+    renderQuickEndpoints();
+  }catch(error){
+    $('#endpointCount').textContent='加载失败';
+    $('#endpointList').innerHTML=`<div class="empty">${esc(error.message)}，请稍后刷新页面</div>`;
+    $('#quickEndpoint').innerHTML='<option value="">接口加载失败，请刷新重试</option>';
+  }
+}
+
+function renderQuickEndpoints(){
+  const select=$('#quickEndpoint');
+  select.replaceChildren();
+  const placeholder=document.createElement('option');
+  placeholder.value='';
+  placeholder.textContent=endpoints.length?'请选择接口（不自动选择）':'暂无可选接口';
+  select.appendChild(placeholder);
+  for(const endpoint of endpoints){
+    const option=document.createElement('option');
+    option.value=endpoint.path;
+    option.textContent=`${endpoint.title||endpoint.path} · ${endpoint.method||'API'}`;
+    select.appendChild(option);
+  }
+  select.disabled=!endpoints.length;
+  $('#quickstartBtn').disabled=true;
+}
+
+function renderEndpointList(){
+  const query=$('#search').value.trim().toLowerCase();
+  const rows=endpoints.filter(endpoint=>`${endpoint.title||''} ${endpoint.path||''} ${endpoint.description||''}`.toLowerCase().includes(query));
+  $('#endpointCount').textContent=`${rows.length} / ${endpoints.length} 个接口`;
+  if(!rows.length){$('#endpointList').innerHTML='<div class="empty">没有找到相关功能</div>';return}
+  $('#endpointList').innerHTML=rows.map(endpoint=>`<button class="endpoint" type="button" data-path="${esc(endpoint.path)}"><span class="method">${esc(endpoint.method||'API')}</span><b>${esc(endpoint.title||endpoint.path)}</b><span class="endpoint-path">${esc(endpoint.path)}</span><span class="endpoint-desc">${esc(endpoint.description||'点击查看参数、返回结构与测试选项')}</span><span class="enter">${endpoint.usage_count?`已调用 ${esc(endpoint.usage_count)} 次 · `:''}${currentView==='test'?'前往测试':'查看详情'} →</span></button>`).join('');
+  document.querySelectorAll('#endpointList .endpoint').forEach(button=>button.addEventListener('click',()=>selectEndpoint(button.dataset.path,currentView==='test'?'test':'detail')));
+}
+
+function selectEndpoint(path,destination='detail'){
+  selected=endpoints.find(endpoint=>endpoint.path===path);
+  if(!selected)return;
+  $('#endpointMethod').textContent=selected.method||'API';
+  $('#endpointTitle').textContent=selected.title||selected.path;
+  $('#endpointDesc').textContent=selected.description||'查看接口参数、返回结构并进行测试。';
+  $('#endpointPath').textContent=selected.path;
+  $('#backBtn').textContent=currentView==='test'?'← 返回在线测试目录':currentView==='quickstart'?'← 返回快速接入':'← 返回接口目录';
+  renderInputTable();
+  renderOutputTable();
+  renderResponseExample();
+  renderParams();
+  resetResultsAndCode();
+  for(const id of ['guideView','catalogView','quickstartView'])$('#'+id).hidden=true;
+  $('#testView').hidden=false;
+  if(destination==='test'||destination==='code'){
+    const target=destination==='test'?$('#testPanel'):$('#codePanel');
+    requestAnimationFrame(()=>target.scrollIntoView({behavior:'smooth',block:'start'}));
+  }else window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function showCurrentDirectory(){
+  $('#testView').hidden=true;
+  applyView();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function endpointParams(){
+  return selected&&Array.isArray(selected.params)?selected.params:[];
+}
+
+function displayValue(value){
+  if(value===null||value===undefined||value==='')return '—';
+  return typeof value==='object'?JSON.stringify(value):String(value);
+}
+
+function renderInputTable(){
+  const params=endpointParams();
+  $('#inputTable').innerHTML=params.length?params.map(param=>`<tr><td><code>${esc(param.name)}</code></td><td><span class="type-tag">${esc(param.type||'string')}</span></td><td>${param.required?'<span class="required">是</span>':'否'}</td><td>${esc(param.description||'—')}</td><td><code>${esc(displayValue(param.default))}</code></td></tr>`).join(''):'<tr><td colspan="5">此接口无入参，直接发送请求即可。</td></tr>';
+}
+
+function hasResponseExample(endpoint){
+  return endpoint&&endpoint.response_example!==undefined&&endpoint.response_example!==null&&endpoint.response_example!=='';
+}
+
+function jsonText(value){
+  return JSON.stringify(value,null,2)??String(value);
+}
+
+function renderOutputTable(){
+  const hasCustomOutputs=selected&&Array.isArray(selected.outputs)&&selected.outputs.length>0;
+  const outputs=hasCustomOutputs?selected.outputs:genericOutputs;
+  $('#outputNote').textContent=hasCustomOutputs?'接口文档提供的返回字段':'暂未提供专属出参，以下仅为通用 code / msg / data 结构';
+  $('#outputTable').innerHTML=outputs.map(output=>`<tr><td><code>${esc(output.name||'—')}</code></td><td><span class="type-tag">${esc(output.type||'any')}</span></td><td>${esc(output.description||'—')}</td></tr>`).join('');
+}
+
+function renderResponseExample(){
+  const custom=hasResponseExample(selected);
+  $('#exampleLabel').textContent=custom?'文档示例，非实时请求结果':'通用结构示意，非真实接口响应';
+  $('#exampleLabel').classList.toggle('document',custom);
+  $('#responseExample').textContent=jsonText(custom?selected.response_example:{code:0,msg:'success',data:{}});
+}
+
+function renderParams(){
+  const params=endpointParams();
+  if(!params.length){$('#params').innerHTML='<div class="no-params full">这个接口不需要填写任何选项，可直接运行沙盒或发送真实测试。</div>';return}
+  $('#params').innerHTML=params.map(param=>{
+    const label=labels[param.name]||param.title||param.name;
+    const required=param.required?'<span class="required">*</span>':'';
+    const value=param.default===null||param.default===undefined?'':param.default;
+    let control;
+    if(Array.isArray(param.enum)&&param.enum.length){
+      control=`<select name="${esc(param.name)}" ${param.required?'required':''}>${!param.required?'<option value="">不限</option>':''}${param.enum.map(item=>`<option value="${esc(item)}" ${String(item)===String(value)?'selected':''}>${esc(item)}</option>`).join('')}</select>`;
+    }else{
+      const type=param.type==='integer'||param.type==='number'?'number':'text';
+      control=`<input name="${esc(param.name)}" type="${type}" value="${esc(value)}" ${param.required?'required':''} ${param.minimum!==null&&param.minimum!==undefined?`min="${esc(param.minimum)}"`:''} ${param.maximum!==null&&param.maximum!==undefined?`max="${esc(param.maximum)}"`:''} placeholder="${param.required?'请填写':'可不填'}">`;
+    }
+    return `<div class="param ${params.length===1?'full':''}"><label>${esc(label)}${required}</label>${control}${param.description?`<small>${esc(param.description)}</small>`:''}</div>`;
+  }).join('');
+}
+
+function resetResultsAndCode(){
+  for(const id of ['sandboxResult','result'])$('#'+id).hidden=true;
+  for(const id of ['sandboxRaw','rawResult'])$('#'+id).classList.remove('show');
+  codeGenerated=false;
+  $('#copyCodeBtn').disabled=true;
+  $('#codeOutput').textContent='选择语言并点击“生成代码”';
+}
+
+function collectParams(){
+  const params={};
+  for(const element of $('#params').querySelectorAll('[name]')){
+    if(element.value.trim()!=='')params[element.name]=element.value.trim();
+  }
+  return params;
+}
+
+function friendlyError(status,data){
+  const detail=data&&(data.msg||data.detail);
+  if(status===401)return 'Token 不可用，请返回控制台重置后再试。';
+  if(status===403)return detail||'当前账号或 IP 没有访问权限。';
+  if(status===429)return detail||'请求太频繁或额度已用完，请稍后重试。';
+  if(status===422)return '填写的选项不符合要求，请检查后重试。';
+  return detail||`接口返回了 ${status} 状态，请检查选项或稍后重试。`;
+}
+
+function renderEasy(value,container){
+  container.replaceChildren();
+  const rows=Array.isArray(value)?value.slice(0,20).map((item,index)=>[`结果 ${index+1}`,item]):value&&typeof value==='object'?Object.entries(value):[['返回内容',value]];
+  if(!rows.length){container.innerHTML='<div class="empty">没有返回内容</div>';return}
+  for(const [key,val] of rows){
+    const row=document.createElement('div');
+    row.className='result-row';
+    const term=document.createElement('dt');
+    term.textContent=keyLabels[key]||key;
+    const detail=document.createElement('dd');
+    detail.textContent=val===null?'无':typeof val==='object'?jsonText(val):String(val);
+    row.append(term,detail);
+    container.appendChild(row);
+  }
+}
+
+function toggleRaw(id,button){
+  const raw=$('#'+id);
+  raw.classList.toggle('show');
+  button.setAttribute('aria-expanded',raw.classList.contains('show')?'true':'false');
+}
+
+function showRealResult(result){
+  const ok=result.status_code>=200&&result.status_code<400;
+  $('#result').hidden=false;
+  $('#resultMeta').textContent=`HTTP ${result.status_code} · ${result.duration_ms} ms`;
+  $('#resultMeta').classList.toggle('bad',!ok);
+  $('#resultTip').className='result-tip'+(ok?'':' bad');
+  $('#resultTip').textContent=ok?'真实请求成功。下方是接口实际返回的内容。':friendlyError(result.status_code,result.data);
+  renderEasy(ok?result.data:(result.data||{msg:friendlyError(result.status_code,result.data)}),$('#easyResult'));
+  $('#rawResult').textContent=jsonText(result.data);
+  $('#rawResult').classList.remove('show');
+  $('#result').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+async function runRealTest(event){
+  event.preventDefault();
+  if(busy||!selected)return;
+  busy=true;
+  $('#testBtn').disabled=true;
+  $('#testBtn').textContent='正在发送真实请求...';
+  try{
+    const result=await api('/api/portal/docs/test',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:selected.path,params:collectParams()})});
+    showRealResult(result);
+  }catch(error){
+    showRealResult({status_code:0,duration_ms:0,data:{msg:error.message}});
+  }finally{
+    busy=false;
+    $('#testBtn').disabled=false;
+    $('#testBtn').textContent='发送真实测试';
+  }
+}
+
+function runSandbox(){
+  if(!selected)return;
+  const params=collectParams();
+  const custom=hasResponseExample(selected);
+  const data=custom?JSON.parse(JSON.stringify(selected.response_example)):{code:0,msg:'本地模拟成功（非真实接口响应）',data:{request_params:params}};
+  $('#sandboxResult').hidden=false;
+  $('#sandboxMeta').textContent='本地模拟完成 · 未请求目标接口';
+  $('#sandboxTip').className='result-tip';
+  $('#sandboxTip').textContent=`本地模拟，不请求目标接口、不消耗额度。以下内容由${custom?'文档 response_example':'通用 code / msg / data 结构'}生成，不代表真实接口返回。`;
+  $('#sandboxParams').textContent=jsonText(params);
+  renderEasy(data,$('#sandboxEasy'));
+  $('#sandboxRaw').textContent=jsonText(data);
+  $('#sandboxRaw').classList.remove('show');
+  $('#sandboxResult').scrollIntoView({behavior:'smooth',block:'nearest'});
+  reportProgress('sandbox_test');
+}
+
+function setCodeLanguage(language){
+  if(!['curl','fetch','python'].includes(language))return;
+  codeLanguage=language;
+  document.querySelectorAll('.code-tab').forEach(button=>{
+    const active=button.dataset.lang===language;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-selected',active?'true':'false');
+  });
+  if(codeGenerated)generateCode();
+  else $('#codeOutput').textContent='选择语言并点击“生成代码”';
+}
+
+function curlQuote(value){
+  return `"${String(value).replace(/(["\\$`])/g,'\\$1')}"`;
+}
+
+function buildCode(){
+  const method=String(selected.method||'GET').toUpperCase();
+  const params=collectParams();
+  const getLike=method==='GET'||method==='HEAD';
+  const baseUrl=new URL(selected.path,location.origin);
+  const requestUrl=new URL(baseUrl);
+  if(getLike)for(const [key,value] of Object.entries(params))requestUrl.searchParams.set(key,value);
+  if(codeLanguage==='curl'){
+    const parts=['curl','--request',method,curlQuote(requestUrl.toString()),'--header',curlQuote('token: YOUR_TOKEN'),'--header',curlQuote('Accept: application/json')];
+    if(!getLike)parts.push('--header',curlQuote('Content-Type: application/json'),'--data',curlQuote(JSON.stringify(params)));
+    return parts.join(' ');
+  }
+  if(codeLanguage==='fetch'){
+    const headers={"token":"YOUR_TOKEN","Accept":"application/json"};
+    if(!getLike)headers['Content-Type']='application/json';
+    return `const response = await fetch(${JSON.stringify(requestUrl.toString())}, {\n  method: ${JSON.stringify(method)},\n  headers: ${JSON.stringify(headers,null,2).replace(/\n/g,'\n  ')}${getLike?'':`,\n  body: JSON.stringify(${JSON.stringify(params,null,2).replace(/\n/g,'\n  ')})`}\n});\n\nif (!response.ok) {\n  throw new Error(\`HTTP \${response.status}\`);\n}\nconst data = await response.json();\nconsole.log(data);`;
+  }
+  return `import requests\n\nurl = ${JSON.stringify(baseUrl.toString())}\nheaders = {\n    "token": "YOUR_TOKEN",\n    "Accept": "application/json"\n}\nparams = ${JSON.stringify(params,null,2)}\n\n${getLike?`response = requests.get(url, params=params, headers=headers, timeout=30)`:`response = requests.request(${JSON.stringify(method)}, url, json=params, headers=headers, timeout=30)`}\nresponse.raise_for_status()\nprint(response.json())`;
+}
+
+function generateCode(){
+  if(!selected)return;
+  $('#codeOutput').textContent=buildCode();
+  codeGenerated=true;
+  $('#copyCodeBtn').disabled=false;
+  notify('代码已在本地生成，未发送真实接口请求。');
+  reportProgress('code_generate');
+}
+
+async function copyCode(){
+  if(!codeGenerated)return;
+  const text=$('#codeOutput').textContent;
+  try{
+    if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(text);
+    else{
+      const textarea=document.createElement('textarea');
+      textarea.value=text;
+      textarea.style.position='fixed';
+      textarea.style.opacity='0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      const copied=document.execCommand('copy');
+      textarea.remove();
+      if(!copied)throw new Error('浏览器未允许复制');
+    }
+    notify('代码已复制，请将 YOUR_TOKEN 替换为你自己的 Token。');
+  }catch(error){notify(`复制失败，请手动选择代码复制：${error.message}`)}
+}
+
+init();
+</script>
+</body>
+</html>

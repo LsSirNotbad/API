@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录 - API 平台管理后台</title>
+<link rel="icon" type="image/x-icon" href="/admin/static/favicon.ico">
+<link rel="shortcut icon" type="image/x-icon" href="/admin/static/favicon.ico">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%234f46e5'/%3E%3Cpath d='M25 20 13 32l12 12M39 20l12 12-12 12M36 14 28 50' fill='none' stroke='white' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{
+    --primary:#2563eb; --primary-dark:#1d4ed8; --text:#1f2937;
+    --muted:#6b7280; --line:#e5e7eb; --error:#dc2626;
+  }
+  html,body{ height:100%; }
+  body{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;
+    background:#070d1a;
+    padding:24px; overflow:hidden;
+  }
+
+  /* ===== 背景：网格 + 数据流 + 浮动卡片 ===== */
+  .bg-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(59,130,246,.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,.08) 1px, transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(circle at 50% 40%, #000 0%, transparent 75%);
+    -webkit-mask-image:radial-gradient(circle at 50% 40%, #000 0%, transparent 75%);
+  }
+  .bg-glow{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(circle at 20% 15%, rgba(37,99,235,.35), transparent 40%),
+      radial-gradient(circle at 80% 85%, rgba(124,58,237,.30), transparent 42%),
+      radial-gradient(circle at 50% 50%, rgba(34,211,238,.10), transparent 55%);
+  }
+
+  /* 数据流线条 */
+  .streams{ position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.55; }
+  .stream{
+    position:absolute; height:1px; width:160px;
+    background:linear-gradient(90deg, transparent, #38bdf8, transparent);
+    animation:streamMove linear infinite;
+  }
+  @keyframes streamMove{
+    0%{ transform:translateX(-200px); opacity:0; }
+    20%{ opacity:1; }
+    80%{ opacity:1; }
+    100%{ transform:translateX(calc(100vw + 200px)); opacity:0; }
+  }
+
+  /* 浮动接口卡片 */
+  .float-card{
+    position:fixed; z-index:0; pointer-events:none;
+    background:rgba(15,23,42,.55);
+    border:1px solid rgba(59,130,246,.25);
+    border-radius:10px; padding:10px 12px;
+    font-family:"Consolas","Courier New",monospace; font-size:11px;
+    color:#7dd3fc; backdrop-filter:blur(6px);
+    box-shadow:0 8px 24px rgba(0,0,0,.35);
+    animation:cardFloat 9s ease-in-out infinite;
+    white-space:nowrap;
+  }
+  .float-card .method{
+    display:inline-block; padding:1px 6px; border-radius:4px;
+    font-weight:700; margin-right:6px; font-size:10px;
+  }
+  .m-get{ background:#064e3b; color:#6ee7b7; }
+  .m-post{ background:#1e3a8a; color:#93c5fd; }
+  .m-put{ background:#713f12; color:#fcd34d; }
+  .m-del{ background:#7f1d1d; color:#fca5a5; }
+  .float-card .code{ color:#86efac; float:right; margin-left:10px; }
+  @keyframes cardFloat{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-14px); }
+  }
+
+  /* ===== 登录卡片 ===== */
+  .card{
+    position:relative; z-index:2; width:100%; max-width:410px; background:#fff;
+    border-radius:20px; padding:34px 34px 28px;
+    box-shadow:0 30px 70px rgba(2,6,23,.6), 0 0 0 1px rgba(255,255,255,.06) inset;
+    opacity:0; transform:translateY(26px) scale(.97);
+    animation:cardIn .75s cubic-bezier(.2,.8,.2,1) .1s forwards;
+  }
+  @keyframes cardIn{
+    to{ opacity:1; transform:translateY(0) scale(1); }
+  }
+
+  /* ===== 人物角色 ===== */
+  .mascot{
+    position:relative; width:110px; height:120px; margin:-4px auto 8px;
+    animation:floatY 3.8s ease-in-out infinite;
+  }
+  @keyframes floatY{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-7px); }
+  }
+  .head{
+    position:absolute; left:50%; top:6px; transform:translateX(-50%);
+    width:78px; height:78px; border-radius:50%;
+    background:linear-gradient(145deg,#fde7d6,#f6c7a8);
+    box-shadow:0 8px 20px rgba(0,0,0,.12);
+    z-index:3;
+  }
+  /* 头发 */
+  .hair{
+    position:absolute; left:50%; top:0; transform:translateX(-50%);
+    width:84px; height:44px; border-radius:50% 50% 40% 40%;
+    background:linear-gradient(145deg,#1e293b,#0f172a);
+    z-index:4;
+  }
+  .hair::after{
+    content:""; position:absolute; left:10px; top:30px;
+    width:64px; height:18px; border-radius:50%;
+    background:linear-gradient(145deg,#1e293b,#0f172a);
+  }
+  /* 耳朵 */
+  .ear{
+    position:absolute; top:40px; width:12px; height:18px; border-radius:50%;
+    background:#f6c7a8; z-index:2;
+  }
+  .ear.left{ left:8px; }
+  .ear.right{ right:8px; }
+  /* 眼睛 */
+  .eyes{
+    position:absolute; top:36px; left:50%; transform:translateX(-50%);
+    display:flex; gap:18px; z-index:5;
+  }
+  .eye{
+    width:16px; height:16px; background:#fff; border-radius:50%;
+    position:relative; overflow:hidden;
+    box-shadow:inset 0 -2px 3px rgba(0,0,0,.12);
+    transition:height .18s ease, width .18s ease;
+  }
+  .eye .pupil{
+    position:absolute; width:8px; height:8px; background:#1e293b;
+    border-radius:50%; left:50%; top:50%;
+    transform:translate(-50%,-50%);
+    transition:transform .08s linear;
+  }
+  .eye .pupil::after{
+    content:""; position:absolute; width:2.5px; height:2.5px;
+    background:#fff; border-radius:50%; left:1.5px; top:1.5px;
+  }
+  /* 嘴 */
+  .mouth{
+    position:absolute; left:50%; top:58px; transform:translateX(-50%);
+    width:16px; height:8px; border-radius:0 0 16px 16px;
+    background:#c2410c; z-index:5;
+    transition:all .18s ease;
+  }
+  .mouth.open{ width:14px; height:12px; }
+  /* 腮红 */
+  .blush{
+    position:absolute; top:50px; width:12px; height:7px; border-radius:50%;
+    background:rgba(244,114,182,.55); z-index:4;
+  }
+  .blush.left{ left:12px; }
+  .blush.right{ right:12px; }
+
+  /* 身体 */
+  .body{
+    position:absolute; left:50%; top:74px; transform:translateX(-50%);
+    width:64px; height:44px; border-radius:24px 24px 14px 14px;
+    background:linear-gradient(145deg,#2563eb,#1e40af);
+    z-index:1;
+    box-shadow:0 6px 14px rgba(37,99,235,.35);
+  }
+  .body::after{
+    content:""; position:absolute; left:50%; top:10px; transform:translateX(-50%);
+    width:22px; height:22px; border-radius:50%;
+    background:rgba(255,255,255,.9);
+  }
+  .body::before{
+    content:"{ }"; position:absolute; left:50%; top:10px; transform:translateX(-50%);
+    font-size:13px; font-weight:700; color:#2563eb; line-height:22px; z-index:2;
+  }
+  /* 手臂 */
+  .arm{
+    position:absolute; top:82px; width:14px; height:26px; border-radius:10px;
+    background:linear-gradient(145deg,#2563eb,#1e40af); z-index:0;
+    transition:transform .25s ease;
+  }
+  .arm.left{ left:18px; transform-origin:top right; transform:rotate(12deg); }
+  .arm.right{ right:18px; transform-origin:top left; transform:rotate(-12deg); }
+
+  /* 闭眼状态 */
+  .mascot.sleeping .eye{ height:3px; border-radius:3px; }
+  .mascot.sleeping .eye .pupil{ opacity:0; }
+  .mascot.sleeping .mouth{ width:10px; height:4px; }
+
+  /* 账号输入：小人持续放大、挥手、张嘴并显示气泡（持久状态，不依赖一次性动画） */
+  .mascot-inner{
+    position:relative; width:100%; height:100%;
+    transform-origin:50% 82%;
+    transition:transform .28s cubic-bezier(.2,.8,.2,1);
+  }
+  .mascot.user-focus .mascot-inner{ transform:scale(1.16) translateY(-2px); }
+  .mascot.user-focus .eye{ width:24px; height:26px; }
+  .mascot.user-focus .mouth{ width:22px; height:16px; }
+  .mascot.user-focus .arm.right{ transform:rotate(-80deg); animation:wave .8s ease-in-out infinite; }
+  .mascot.user-focus .arm.left{ transform:rotate(30deg); }
+  .mascot.user-focus .head{
+    box-shadow:0 8px 20px rgba(0,0,0,.12), 0 0 0 5px rgba(37,99,235,.20),
+      0 0 26px rgba(37,99,235,.40);
+  }
+  @keyframes wave{
+    0%,100%{ transform:rotate(-68deg); }
+    50%{ transform:rotate(-92deg); }
+  }
+  /* 点击账号瞬间的静态反馈（减少动画偏好下同样可见） */
+  .mascot.poke .head{ transform:translateX(-50%) translateY(-6px) rotate(-5deg) scale(1.08); }
+  .mascot.poke .eye{ width:26px; height:26px; }
+  .mascot.poke .mouth{ width:13px; height:13px; border-radius:50%; }
+  /* 输入账号时头部左右摆动，每次按键都有可见位移 */
+  .mascot.nod-up .head{ transform:translateX(-50%) translateY(-6px) rotate(3deg); }
+  .mascot.nod-down .head{ transform:translateX(-50%) translateY(6px) rotate(-3deg); }
+  /* 小人对话气泡 */
+  .mascot-bubble{
+    position:absolute; left:50%; top:-18px; transform:translateX(-50%) scale(.7);
+    padding:4px 10px; border-radius:10px; background:#2563eb; color:#fff;
+    font-size:11px; line-height:1.4; white-space:nowrap; z-index:7;
+    opacity:0; pointer-events:none; transition:.2s;
+    box-shadow:0 6px 14px rgba(37,99,235,.35);
+  }
+  .mascot-bubble::after{
+    content:""; position:absolute; left:50%; bottom:-4px; width:8px; height:8px;
+    transform:translateX(-50%) rotate(45deg); background:#2563eb; border-radius:2px;
+  }
+  .mascot.user-focus .mascot-bubble{ opacity:1; transform:translateX(-50%) scale(1); }
+
+  /* 隐藏诱饵字段：避免浏览器自动填充下拉遮挡小人 */
+  .autofill-decoy{
+    position:fixed; left:-9999px; top:-9999px; width:1px; height:1px;
+    overflow:hidden; opacity:0; pointer-events:none;
+  }
+
+  /* ===== 表单 ===== */
+  h1{ font-size:20px; text-align:center; color:var(--text); font-weight:600; }
+  .sub{ text-align:center; color:var(--muted); font-size:12.5px; margin:6px 0 22px; }
+
+  .field{ margin-bottom:15px; opacity:0; transform:translateY(10px);
+    animation:fieldIn .5s ease forwards; }
+  .field:nth-of-type(1){ animation-delay:.25s; }
+  .field:nth-of-type(2){ animation-delay:.35s; }
+  .field:nth-of-type(3){ animation-delay:.45s; }
+  @keyframes fieldIn{ to{ opacity:1; transform:translateY(0); } }
+
+  .field label{ display:block; font-size:13px; color:#374151; margin-bottom:7px; font-weight:500; }
+  .input-wrap{ position:relative; }
+  .field input{
+    width:100%; height:44px; padding:0 14px; font-size:14px; color:var(--text);
+    border:1px solid var(--line); border-radius:10px; background:#f9fafb;
+    outline:none; transition:.18s;
+  }
+  .field input:focus{
+    border-color:var(--primary); background:#fff;
+    box-shadow:0 0 0 3px rgba(37,99,235,.12);
+  }
+  .field input:valid:not(:placeholder-shown){ border-color:#86efac; }
+
+  .toggle-pwd{
+    position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    width:32px; height:32px; border:none; background:transparent;
+    cursor:pointer; font-size:16px; line-height:1; color:#6b7280;
+    border-radius:8px; display:flex; align-items:center; justify-content:center;
+    transition:.15s;
+  }
+  .toggle-pwd:hover{ background:#eef2ff; color:var(--primary); }
+  .field input.has-toggle{ padding-right:44px; }
+
+  .captcha-row{ display:flex; gap:10px; }
+  .captcha-row input{ flex:1; }
+  .captcha-img{
+    width:132px; height:44px; border:1px solid var(--line); border-radius:10px;
+    cursor:pointer; background:#f4f7fb; flex:none; overflow:hidden;
+    transition:.2s;
+  }
+  .captcha-img:hover{ border-color:var(--primary); transform:scale(1.02); }
+  .captcha-img img{ width:100%; height:100%; display:block; }
+
+  .btn{
+    width:100%; height:46px; border:none; border-radius:10px; cursor:pointer;
+    background:linear-gradient(135deg,#2563eb,#1d4ed8); color:#fff;
+    font-size:15px; font-weight:600; letter-spacing:1px; margin-top:6px;
+    transition:.18s; box-shadow:0 8px 18px rgba(37,99,235,.28);
+    position:relative; overflow:hidden;
+    opacity:0; animation:fieldIn .5s ease .55s forwards;
+  }
+  .btn::after{
+    content:""; position:absolute; top:0; left:-100%; width:60%; height:100%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);
+    transform:skewX(-20deg);
+    animation:shine 3.5s ease-in-out infinite;
+  }
+  @keyframes shine{
+    0%,60%{ left:-100%; }
+    80%,100%{ left:140%; }
+  }
+  .btn:hover{ transform:translateY(-1px); box-shadow:0 12px 22px rgba(37,99,235,.34); }
+  .btn:active{ transform:translateY(0); }
+
+  .alert{
+    display:none; margin-bottom:14px; padding:10px 12px; font-size:13px;
+    color:#991b1b; background:#fef2f2; border:1px solid #fecaca; border-radius:9px;
+    animation:shake .45s ease;
+  }
+  .alert.show{ display:block; }
+  .alert.shake{ animation:shake .45s ease; }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    20%{ transform:translateX(-6px); }
+    40%{ transform:translateX(6px); }
+    60%{ transform:translateX(-4px); }
+    80%{ transform:translateX(4px); }
+  }
+
+  .foot{ text-align:center; color:#9ca3af; font-size:12px; margin-top:18px; line-height:1.7; }
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{ animation:none !important; transition:none !important; }
+    .card{ opacity:1; transform:none; }
+    .field{ opacity:1; transform:none; }
+    .btn{ opacity:1; }
+    .mascot{ animation:none; }
+  }
+</style>
+</head>
+<body>
+  <!-- 背景 -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+  <div class="streams" id="streams"></div>
+  <div id="floatCards"></div>
+
+  <div class="card">
+    <!-- 人物角色 -->
+    <div class="mascot" id="mascot">
+      <div class="mascot-inner">
+        <div class="mascot-bubble" id="mascotBubble">Hi ~</div>
+        <div class="arm left"></div>
+        <div class="arm right"></div>
+        <div class="head">
+          <div class="ear left"></div>
+          <div class="ear right"></div>
+          <div class="hair"></div>
+          <div class="eyes">
+            <div class="eye"><div class="pupil"></div></div>
+            <div class="eye"><div class="pupil"></div></div>
+          </div>
+          <div class="blush left"></div>
+          <div class="blush right"></div>
+          <div class="mouth"></div>
+        </div>
+        <div class="body"></div>
+      </div>
+    </div>
+
+    <h1>API 平台管理后台</h1>
+    <p class="sub">请登录后管理接口、日志与数据</p>
+
+    <div class="alert" id="alert"></div>
+
+    <form method="post" action="/admin/login" autocomplete="off">
+      <!-- 隐藏的诱饵字段：吸收浏览器/密码管理器的自动填充下拉，避免它盖住上方小人 -->
+      <div class="autofill-decoy" aria-hidden="true">
+        <input type="text" name="prevent_autofill_user" autocomplete="username" tabindex="-1">
+        <input type="password" name="prevent_autofill_pwd" autocomplete="current-password" tabindex="-1">
+      </div>
+      <div class="field">
+        <label for="username">账号</label>
+        <div class="input-wrap">
+          <input id="username" name="username" type="text" placeholder="请输入管理员账号" required
+                 autocomplete="off" autocapitalize="off" spellcheck="false"
+                 data-lpignore="true" data-1p-ignore="true">
+        </div>
+      </div>
+      <div class="field">
+        <label for="password">密码</label>
+        <div class="input-wrap">
+          <input id="password" name="password" type="password" placeholder="请输入密码" required
+                 class="has-toggle" autocomplete="new-password"
+                 data-lpignore="true" data-1p-ignore="true">
+          <button type="button" class="toggle-pwd" id="togglePwd" title="显示/隐藏密码">👁</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="captcha">验证码</label>
+        <div class="captcha-row">
+          <input id="captcha" name="captcha" type="text" maxlength="4" placeholder="不区分大小写"
+                 required autocomplete="off">
+          <div class="captcha-img" id="captchaBox" title="点击刷新验证码">
+            <img id="captchaImg" src="/admin/captcha" alt="验证码">
+          </div>
+        </div>
+      </div>
+      <button class="btn" type="submit">登 录</button>
+    </form>
+    <p class="foot">仅限管理员访问 ·@ 1497388243@qq.com</p>
+  </div>
+
+<script>
+  // 错误提示
+  const alertBox = document.getElementById('alert');
+  function showAlert(msg) {
+    alertBox.textContent = msg;
+    alertBox.classList.add('show');
+    alertBox.classList.remove('shake');
+    void alertBox.offsetWidth;
+    alertBox.classList.add('shake');
+  }
+  const err = new URLSearchParams(location.search).get('error');
+  if (err) showAlert(err);
+
+  // 验证码刷新
+  const box = document.getElementById('captchaBox');
+  const img = document.getElementById('captchaImg');
+  function refreshCaptcha() {
+    img.src = '/admin/captcha?t=' + Date.now();
+    document.getElementById('captcha').value = '';
+    document.getElementById('captcha').focus();
+  }
+  box.addEventListener('click', refreshCaptcha);
+
+  // 表单提交：用 fetch 校验，避免整页刷新导致已输入的账号密码被清空
+  const form = document.querySelector('form');
+  form.addEventListener('submit', async e => {
+    if (form.dataset.plain === '1') return;   // fetch 不可用时的原生提交兜底
+    e.preventDefault();
+    const btn = form.querySelector('.btn');
+    btn.disabled = true;
+    try {
+      const resp = await fetch(form.action, {
+        method: 'POST',
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        body: new URLSearchParams(new FormData(form)),
+        credentials: 'same-origin',
+      });
+      const data = await resp.json();
+      if (data.code === 200) {
+        location.href = data.redirect || '/admin';
+        return;
+      }
+      showAlert(data.msg || '登录失败，请重试');
+      // 验证码错误 / 过期：刷新验证码并清空验证码输入框，账号密码保持不变
+      if (data.field === 'captcha') refreshCaptcha();
+    } catch (ex) {
+      showAlert('网络异常，请重试');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+  if (!window.fetch) form.dataset.plain = '1';
+
+  // ===== 背景数据流 =====
+  const streamsWrap = document.getElementById('streams');
+  for (let i = 0; i < 14; i++) {
+    const s = document.createElement('div');
+    s.className = 'stream';
+    s.style.top = Math.random() * 100 + '%';
+    s.style.left = '0';
+    s.style.animationDuration = (5 + Math.random() * 7) + 's';
+    s.style.animationDelay = (Math.random() * 6) + 's';
+    s.style.opacity = 0.25 + Math.random() * 0.5;
+    streamsWrap.appendChild(s);
+  }
+
+  // ===== 浮动接口卡片 =====
+  const cardsData = [
+    { method: 'GET', path: '/api/v1/user', code: '200' },
+    { method: 'POST', path: '/api/v1/auth/login', code: '201' },
+    { method: 'GET', path: '/api/v1/logs?page=2', code: '200' },
+    { method: 'PUT', path: '/api/v1/config', code: '204' },
+    { method: 'DEL', path: '/api/v1/token/expired', code: '204' },
+    { method: 'GET', path: '/api/v1/stats/today', code: '200' },
+    { method: 'POST', path: '/api/v1/webhook', code: '202' },
+    { method: 'GET', path: '/api/v1/health', code: '200' },
+  ];
+  const methodClass = { GET: 'm-get', POST: 'm-post', PUT: 'm-put', DEL: 'm-del' };
+  const positions = [
+    { top: '10%', left: '6%' }, { top: '18%', right: '8%' },
+    { top: '36%', left: '4%' }, { top: '48%', right: '5%' },
+    { top: '68%', left: '8%' }, { top: '76%', right: '7%' },
+    { top: '86%', left: '14%' }, { top: '60%', right: '14%' },
+  ];
+  const floatWrap = document.getElementById('floatCards');
+  cardsData.forEach((d, i) => {
+    const el = document.createElement('div');
+    el.className = 'float-card';
+    const pos = positions[i % positions.length];
+    Object.assign(el.style, pos);
+    el.style.animationDelay = (i * 0.7) + 's';
+    el.style.animationDuration = (7 + Math.random() * 4) + 's';
+    el.innerHTML = `<span class="method ${methodClass[d.method]}">${d.method}</span>${d.path}<span class="code">${d.code}</span>`;
+    floatWrap.appendChild(el);
+  });
+
+  // ===== 密码显隐 =====
+  const pwdInput = document.getElementById('password');
+  const toggleBtn = document.getElementById('togglePwd');
+  toggleBtn.addEventListener('click', () => {
+    if (pwdInput.type === 'password') {
+      pwdInput.type = 'text';
+      toggleBtn.textContent = '🙈';
+    } else {
+      pwdInput.type = 'password';
+      toggleBtn.textContent = '👁';
+    }
+    pwdInput.focus();
+  });
+
+  // ===== 人物：跟随鼠标 + 输入状态 =====
+  const mascot = document.getElementById('mascot');
+  const pupils = mascot.querySelectorAll('.pupil');
+  const usernameInput = document.getElementById('username');
+  const captchaInput = document.getElementById('captcha');
+  let mouseX = window.innerWidth / 2;
+  let mouseY = window.innerHeight / 2;
+
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    updateEyes();
+  });
+
+  function updateEyes() {
+    if (document.activeElement === pwdInput) {
+      mascot.classList.add('sleeping');
+      mascot.classList.remove('user-focus');
+      return;
+    }
+    mascot.classList.remove('sleeping');
+    if (document.activeElement !== usernameInput) {
+      mascot.classList.remove('user-focus');
+    }
+
+    pupils.forEach(p => {
+      const eye = p.parentElement;
+      const rect = eye.getBoundingClientRect();
+      const eyeCx = rect.left + rect.width / 2;
+      const eyeCy = rect.top + rect.height / 2;
+      const dx = mouseX - eyeCx;
+      const dy = mouseY - eyeCy;
+      const angle = Math.atan2(dy, dx);
+      const maxOffset = Math.max(0, rect.width / 2 - 4);
+      const dist = Math.min(maxOffset, Math.hypot(dx, dy) / 14);
+      const ox = Math.cos(angle) * dist;
+      const oy = Math.sin(angle) * dist;
+      p.style.transform = `translate(calc(-50% + ${ox}px), calc(-50% + ${oy}px))`;
+    });
+  }
+
+  [usernameInput, pwdInput].forEach(inp => {
+    inp.addEventListener('focus', updateEyes);
+    inp.addEventListener('blur', () => setTimeout(updateEyes, 50));
+  });
+
+  const bubble = document.getElementById('mascotBubble');
+  let pokeTimer = null, nodTimer = null, bubbleTimer = null, keystroke = 0;
+
+  // 点击/聚焦账号：持续放大挥手 + 气泡，并叠加一次静态动作（不依赖动画设置）
+  function popMascot() {
+    mascot.classList.remove('user-focus', 'poke', 'nod-up', 'nod-down');
+    void mascot.offsetWidth;   // 强制重排，类名变化立即生效
+    mascot.classList.add('user-focus', 'poke');
+    bubble.textContent = 'Hi ~';
+    clearTimeout(pokeTimer);
+    pokeTimer = setTimeout(() => mascot.classList.remove('poke'), 550);
+  }
+  usernameInput.addEventListener('focus', popMascot);
+  usernameInput.addEventListener('click', popMascot);
+  usernameInput.addEventListener('input', () => {
+    keystroke += 1;
+    mascot.classList.remove('poke', 'nod-up', 'nod-down');
+    mascot.classList.add(keystroke % 2 ? 'nod-up' : 'nod-down');
+    bubble.textContent = '输入中…';
+    clearTimeout(nodTimer);
+    nodTimer = setTimeout(() => mascot.classList.remove('nod-up', 'nod-down'), 280);
+    clearTimeout(bubbleTimer);
+    bubbleTimer = setTimeout(() => { bubble.textContent = 'Hi ~'; }, 900);
+  });
+  usernameInput.addEventListener('blur', () => {
+    mascot.classList.remove('poke', 'nod-up', 'nod-down');
+    bubble.textContent = 'Hi ~';
+    clearTimeout(pokeTimer);
+    clearTimeout(nodTimer);
+    clearTimeout(bubbleTimer);
+  });
+  // 离开账号框时清除小人账号状态：只在密码/验证码获得焦点时显式执行，
+  // 不再挂 document 级 focusin/click，避免点击账号标签时误清除
+  function clearUserState() {
+    mascot.classList.remove('user-focus', 'poke', 'nod-up', 'nod-down');
+    bubble.textContent = 'Hi ~';
+    clearTimeout(pokeTimer);
+    clearTimeout(nodTimer);
+    clearTimeout(bubbleTimer);
+  }
+  pwdInput.addEventListener('focus', clearUserState);
+  captchaInput.addEventListener('focus', () => {
+    clearUserState();
+    updateEyes();
+  });
+
+  updateEyes();
+</script>
+</body>
+</html>

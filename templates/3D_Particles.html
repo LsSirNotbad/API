@@ -1,0 +1,3219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D粒子生日手势互动</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+            background: #020308;
+            color: #dffbff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            touch-action: none;
+            user-select: none;
+        }
+
+        #canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #webcam {
+            display: none;
+        }
+
+        #ui-layer {
+            position: fixed;
+            top: max(18px, env(safe-area-inset-top));
+            left: 50%;
+            z-index: 20;
+            width: min(94vw, 760px);
+            transform: translateX(-50%);
+            color: #72ecff;
+            text-align: center;
+            pointer-events: none;
+            background: rgba(4, 8, 22, 0.74);
+            border: 1px solid rgba(99, 234, 255, 0.32);
+            border-radius: 999px;
+            box-shadow: 0 0 22px rgba(74, 229, 255, 0.14);
+            padding: 14px 28px;
+            backdrop-filter: blur(12px);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        #status-main {
+            display: block;
+            font-size: clamp(16px, 3vw, 22px);
+            font-weight: 700;
+            line-height: 1.35;
+            letter-spacing: 0.06em;
+        }
+
+        #status-sub {
+            display: block;
+            margin-top: 2px;
+            color: rgba(205, 249, 255, 0.72);
+            font-size: clamp(13px, 2.4vw, 16px);
+            line-height: 1.35;
+            letter-spacing: 0.02em;
+        }
+
+        #photo-container {
+            position: fixed;
+            inset: 0;
+            z-index: 6;
+            display: none;
+            pointer-events: none;
+            transform-style: preserve-3d;
+        }
+
+        .photo-card {
+            --card-w: clamp(64px, 7vw, 92px);
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: var(--card-w);
+            aspect-ratio: var(--photo-aspect, 9 / 16);
+            padding: 3px;
+            background: linear-gradient(145deg, rgba(250, 255, 255, 0.72), rgba(86, 255, 235, 0.14) 42%, rgba(10, 18, 34, 0.36));
+            border: 1px solid rgba(210, 255, 255, 0.42);
+            border-radius: 5px;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.44), 0 0 12px rgba(115, 250, 255, 0.26);
+            overflow: hidden;
+            will-change: transform, opacity;
+            transition: opacity 0.14s linear;
+            pointer-events: auto;
+        }
+
+        .photo-card.is-landscape {
+            --card-w: clamp(84px, 9vw, 124px);
+        }
+
+        .photo-card.is-square {
+            --card-w: clamp(68px, 7.5vw, 104px);
+        }
+
+        .photo-card.is-featured {
+            border-color: rgba(255, 245, 164, 0.72);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.46), 0 0 18px rgba(255, 237, 128, 0.35);
+        }
+
+        .photo-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(115deg, rgba(255, 255, 255, 0.35), transparent 34%, rgba(86, 255, 230, 0.14) 68%, transparent);
+            mix-blend-mode: screen;
+            pointer-events: none;
+        }
+
+        .photo-card img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+            background: #080c16;
+        }
+
+        .photo-caption {
+            position: absolute;
+            left: 50%;
+            top: calc(100% + 8px);
+            display: none;
+            width: max-content;
+            max-width: min(240px, 48vw);
+            transform: translateX(-50%);
+            padding: 7px 10px;
+            color: #f1feff;
+            text-align: center;
+            background: rgba(3, 10, 20, 0.78);
+            border: 1px solid rgba(145, 245, 255, 0.34);
+            border-radius: 9px;
+            box-shadow: 0 0 16px rgba(68, 238, 255, 0.18);
+            pointer-events: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .photo-card.is-grabbed.has-caption .photo-caption {
+            display: none;
+        }
+
+        .caption-time {
+            display: block;
+            color: rgba(155, 246, 255, 0.86);
+            font-size: 12px;
+            line-height: 1.35;
+            white-space: nowrap;
+        }
+
+        .caption-content {
+            display: block;
+            margin-top: 2px;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.35;
+            white-space: normal;
+        }
+
+        #floating-photo-caption {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            z-index: 72;
+            display: none;
+            width: max-content;
+            max-width: min(320px, 72vw);
+            padding: 9px 13px;
+            color: #f4feff;
+            text-align: center;
+            background: rgba(3, 10, 20, 0.82);
+            border: 1px solid rgba(145, 245, 255, 0.42);
+            border-radius: 10px;
+            box-shadow: 0 0 18px rgba(68, 238, 255, 0.22), 0 12px 30px rgba(0, 0, 0, 0.36);
+            pointer-events: none;
+            backdrop-filter: blur(12px);
+            transform: translate(-50%, 0);
+        }
+
+        #floating-photo-caption.is-above {
+            transform: translate(-50%, -100%);
+        }
+
+        #floating-caption-time {
+            display: block;
+            color: rgba(155, 246, 255, 0.9);
+            font-size: 13px;
+            line-height: 1.35;
+            white-space: nowrap;
+        }
+
+        #floating-caption-content {
+            display: block;
+            margin-top: 3px;
+            font-size: clamp(15px, 2.5vw, 18px);
+            font-weight: 800;
+            line-height: 1.35;
+        }
+
+        #photo-tools {
+            position: fixed;
+            left: max(18px, env(safe-area-inset-left));
+            bottom: max(22px, env(safe-area-inset-bottom));
+            z-index: 36;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            pointer-events: auto;
+        }
+
+        #photo-manager-button,
+        #manager-add-photo-button,
+        #manager-import-button,
+        #manager-export-button,
+        #manager-close-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 42px;
+            padding: 0 17px;
+            color: #dffcff;
+            font: 700 15px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+            letter-spacing: 0;
+            background: rgba(4, 16, 26, 0.78);
+            border: 1px solid rgba(111, 244, 255, 0.48);
+            border-radius: 999px;
+            box-shadow: 0 0 18px rgba(65, 236, 255, 0.18);
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+        }
+
+        #photo-manager-button::before {
+            content: "✦";
+            display: grid;
+            place-items: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            color: #06141b;
+            background: #8ff8ff;
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        #manager-add-photo-button::before {
+            content: "+";
+            display: grid;
+            place-items: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            color: #06141b;
+            background: #8ff8ff;
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        #shape-label {
+            min-width: 58px;
+            color: rgba(216, 250, 255, 0.86);
+            font-size: 13px;
+            font-weight: 800;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(0, 238, 255, 0.3);
+        }
+
+        #photo-count {
+            color: rgba(216, 250, 255, 0.72);
+            font-size: 13px;
+            text-shadow: 0 0 10px rgba(0, 238, 255, 0.35);
+        }
+
+        #photo-manager-panel {
+            position: fixed;
+            left: max(18px, env(safe-area-inset-left));
+            bottom: calc(max(22px, env(safe-area-inset-bottom)) + 56px);
+            z-index: 46;
+            display: none;
+            width: min(720px, calc(100vw - 36px));
+            max-height: min(70vh, 620px);
+            padding: 16px;
+            color: #e9feff;
+            background: rgba(4, 12, 24, 0.9);
+            border: 1px solid rgba(111, 244, 255, 0.38);
+            border-radius: 14px;
+            box-shadow: 0 18px 46px rgba(0, 0, 0, 0.48), 0 0 28px rgba(39, 221, 255, 0.14);
+            backdrop-filter: blur(16px);
+            pointer-events: auto;
+        }
+
+        #photo-manager-panel.is-open {
+            display: block;
+        }
+
+        .manager-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .manager-title {
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .manager-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #photo-manager-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 12px;
+            max-height: calc(min(70vh, 620px) - 76px);
+            overflow: auto;
+            padding-right: 4px;
+        }
+
+        .manager-card {
+            display: grid;
+            grid-template-columns: 70px minmax(0, 1fr);
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(160, 245, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .manager-card img {
+            width: 70px;
+            height: 92px;
+            object-fit: cover;
+            border-radius: 7px;
+            background: #06101a;
+        }
+
+        .manager-fields {
+            display: grid;
+            gap: 7px;
+            min-width: 0;
+        }
+
+        .manager-fields label {
+            display: grid;
+            gap: 4px;
+            color: rgba(218, 250, 255, 0.72);
+            font-size: 12px;
+        }
+
+        .manager-fields input {
+            min-width: 0;
+            min-height: 32px;
+            padding: 0 9px;
+            color: #f4feff;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(160, 245, 255, 0.24);
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .manager-card.is-featured {
+            border-color: rgba(255, 235, 133, 0.54);
+            background: rgba(255, 230, 130, 0.09);
+        }
+
+        .manager-card-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 2px;
+        }
+
+        .manager-mini-button {
+            min-height: 28px;
+            padding: 0 9px;
+            color: #e9feff;
+            font: 700 12px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(160, 245, 255, 0.22);
+            border-radius: 999px;
+            cursor: pointer;
+        }
+
+        .manager-mini-button.is-active {
+            color: #241d04;
+            background: rgba(255, 237, 128, 0.9);
+            border-color: rgba(255, 237, 128, 0.9);
+        }
+
+        .manager-mini-button.is-danger {
+            color: #ffecec;
+            border-color: rgba(255, 115, 115, 0.35);
+        }
+
+        .manager-note {
+            margin-top: 4px;
+            color: rgba(214, 247, 255, 0.54);
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        body.demo-mode #ui-layer,
+        body.demo-mode #photo-manager-panel,
+        body.demo-mode #settings-panel,
+        body.demo-mode #poster-panel,
+        body.demo-mode #hand-pointer {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        #global-tools {
+            position: fixed;
+            right: max(18px, env(safe-area-inset-right));
+            bottom: max(22px, env(safe-area-inset-bottom));
+            z-index: 38;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .tool-button {
+            min-height: 40px;
+            padding: 0 16px;
+            color: #dffcff;
+            font: 700 14px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+            background: rgba(4, 16, 26, 0.78);
+            border: 1px solid rgba(111, 244, 255, 0.44);
+            border-radius: 999px;
+            box-shadow: 0 0 16px rgba(65, 236, 255, 0.16);
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+        }
+
+        #blow-candle-button {
+            display: none;
+        }
+
+        #settings-panel {
+            position: fixed;
+            right: max(18px, env(safe-area-inset-right));
+            bottom: calc(max(22px, env(safe-area-inset-bottom)) + 54px);
+            z-index: 42;
+            display: none;
+            width: min(330px, calc(100vw - 36px));
+            padding: 16px;
+            color: #dffcff;
+            background: rgba(4, 12, 24, 0.88);
+            border: 1px solid rgba(111, 244, 255, 0.38);
+            border-radius: 14px;
+            box-shadow: 0 18px 46px rgba(0, 0, 0, 0.45), 0 0 28px rgba(39, 221, 255, 0.14);
+            backdrop-filter: blur(16px);
+        }
+
+        #settings-panel.is-open {
+            display: block;
+        }
+
+        .settings-title {
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .settings-row {
+            display: grid;
+            gap: 7px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: rgba(219, 251, 255, 0.78);
+        }
+
+        .settings-row input[type="text"] {
+            width: 100%;
+            min-height: 38px;
+            padding: 0 11px;
+            color: #f2feff;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(160, 245, 255, 0.3);
+            border-radius: 9px;
+            outline: none;
+        }
+
+        .settings-row textarea {
+            width: 100%;
+            min-height: 82px;
+            resize: vertical;
+            padding: 10px 11px;
+            color: #f2feff;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(160, 245, 255, 0.3);
+            border-radius: 9px;
+            outline: none;
+            font: 600 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+        }
+
+        .settings-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .sound-toggle {
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            color: rgba(221, 251, 255, 0.86);
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        #poster-panel {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            z-index: 70;
+            display: none;
+            width: min(920px, calc(100vw - 28px));
+            max-height: min(88vh, 760px);
+            transform: translate(-50%, -50%);
+            padding: 16px;
+            color: #eaffff;
+            background: rgba(3, 10, 22, 0.94);
+            border: 1px solid rgba(132, 245, 255, 0.34);
+            border-radius: 16px;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.58), 0 0 34px rgba(68, 232, 255, 0.15);
+            backdrop-filter: blur(18px);
+            pointer-events: auto;
+        }
+
+        #poster-panel.is-open {
+            display: grid;
+            grid-template-columns: minmax(280px, 390px) 1fr;
+            gap: 16px;
+        }
+
+        .poster-preview {
+            display: grid;
+            place-items: center;
+            min-height: 440px;
+            background: rgba(255, 255, 255, 0.045);
+            border: 1px solid rgba(162, 246, 255, 0.18);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        #poster-preview-canvas {
+            width: min(100%, 340px);
+            aspect-ratio: 2 / 3;
+            border-radius: 10px;
+            box-shadow: 0 18px 38px rgba(0, 0, 0, 0.52);
+            background: #050812;
+        }
+
+        .poster-controls {
+            display: grid;
+            gap: 12px;
+            align-content: start;
+        }
+
+        .poster-title {
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .poster-row {
+            display: grid;
+            gap: 7px;
+            color: rgba(221, 251, 255, 0.78);
+            font-size: 13px;
+        }
+
+        .poster-row select,
+        .poster-row input[type="text"] {
+            width: 100%;
+            min-height: 38px;
+            padding: 0 10px;
+            color: #f4ffff;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(160, 245, 255, 0.28);
+            border-radius: 9px;
+            outline: none;
+        }
+
+        .poster-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        #hand-pointer {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            z-index: 40;
+            width: 28px;
+            height: 28px;
+            border: 2px solid rgba(103, 241, 255, 0.95);
+            border-radius: 50%;
+            background: rgba(0, 255, 255, 0.16);
+            box-shadow: 0 0 16px rgba(0, 255, 255, 0.82);
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.08s ease, border-radius 0.1s ease, background 0.1s ease;
+        }
+
+        #hand-pointer.is-pinching {
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.26);
+            transform: translate(-50%, -50%) scale(0.82);
+        }
+
+        #loading-indicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            z-index: 80;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.4s ease;
+        }
+        #loading-indicator.is-hidden {
+            opacity: 0;
+        }
+        #loading-spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid rgba(111, 244, 255, 0.28);
+            border-top-color: #72ecff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        #loading-text {
+            color: rgba(200, 247, 255, 0.86);
+            font: 700 14px -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+            letter-spacing: 0.04em;
+        }
+
+        @media (max-width: 520px) {
+            #ui-layer {
+                top: max(12px, env(safe-area-inset-top));
+                padding: 9px 14px;
+            }
+
+            .photo-card {
+                --card-w: clamp(52px, 15vw, 76px);
+                padding: 3px;
+            }
+
+            .photo-card.is-landscape {
+                --card-w: clamp(68px, 19vw, 96px);
+            }
+
+            #photo-tools {
+                left: 50%;
+                bottom: max(16px, env(safe-area-inset-bottom));
+                transform: translateX(-50%);
+                gap: 9px;
+            }
+
+            #photo-manager-button,
+            #manager-add-photo-button,
+            #manager-import-button,
+            #manager-export-button,
+            #manager-close-button {
+                min-height: 38px;
+                padding: 0 14px;
+                font-size: 14px;
+            }
+
+            #photo-manager-panel {
+                left: 50%;
+                bottom: calc(max(16px, env(safe-area-inset-bottom)) + 52px);
+                transform: translateX(-50%);
+                width: min(94vw, 520px);
+                max-height: 68vh;
+                padding: 12px;
+            }
+
+            .manager-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .manager-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            #photo-manager-grid {
+                grid-template-columns: 1fr;
+                max-height: calc(68vh - 102px);
+            }
+
+            #global-tools {
+                right: 12px;
+                bottom: max(14px, env(safe-area-inset-bottom));
+                gap: 8px;
+            }
+
+            .tool-button {
+                min-height: 36px;
+                padding: 0 12px;
+                font-size: 13px;
+            }
+
+            #poster-panel.is-open {
+                grid-template-columns: 1fr;
+                overflow: auto;
+            }
+
+            .poster-preview {
+                min-height: 360px;
+            }
+
+            #shape-label {
+                display: none;
+            }
+
+        }
+
+        /* 后台快捷入口：返回后台 / 切换到烟花模式 */
+        #admin-links {
+            position: fixed;
+            top: max(14px, env(safe-area-inset-top));
+            left: max(14px, env(safe-area-inset-left));
+            z-index: 90;
+            display: flex;
+            gap: 8px;
+        }
+
+        #admin-links a {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+            color: rgba(205, 248, 255, 0.62);
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(140, 240, 255, 0.22);
+            text-decoration: none;
+            opacity: 0.6;
+            backdrop-filter: blur(8px);
+            transition: opacity 0.3s, background-color 0.3s, color 0.3s;
+        }
+
+        #admin-links a:hover {
+            opacity: 1;
+            color: #fff;
+            background: rgba(120, 235, 255, 0.22);
+        }
+
+        @media (max-width: 900px) {
+            #admin-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="admin-links">
+        <a href="/admin">← 返回后台</a>
+        <a href="/admin/firework">切换到烟花模式</a>
+    </div>
+    <video id="webcam" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+    <div id="hand-pointer"></div>
+    <div id="loading-indicator">
+        <div id="loading-spinner"></div>
+        <span id="loading-text">正在初始化手势识别…</span>
+    </div>
+    <div id="ui-layer" aria-live="polite">
+        <span id="status-main">张开手掌开始</span>
+        <span id="status-sub">摄像头不可用时点击画面开始</span>
+    </div>
+
+    <div id="photo-container">
+        <div class="photo-card" data-index="0"><img src="https://picsum.photos/360/480?random=116" alt="" draggable="false"></div>
+        <div class="photo-card" data-index="1"><img src="https://picsum.photos/360/480?random=126" alt="" draggable="false"></div>
+        <div class="photo-card" data-index="2"><img src="https://picsum.photos/360/480?random=136" alt="" draggable="false"></div>
+        <div class="photo-card" data-index="3"><img src="https://picsum.photos/360/480?random=146" alt="" draggable="false"></div>
+        <div class="photo-card" data-index="4"><img src="https://picsum.photos/360/480?random=156" alt="" draggable="false"></div>
+        <div class="photo-card" data-index="5"><img src="https://picsum.photos/360/480?random=166" alt="" draggable="false"></div>
+        <div class="photo-card" data-index="6"><img src="https://picsum.photos/360/480?random=176" alt="" draggable="false"></div>
+        <div class="photo-card" data-index="7"><img src="https://picsum.photos/360/480?random=186" alt="" draggable="false"></div>
+        <div class="photo-card" data-index="8"><img src="https://picsum.photos/360/480?random=196" alt="" draggable="false"></div>
+        <div class="photo-card" data-index="9"><img src="https://picsum.photos/360/480?random=206" alt="" draggable="false"></div>
+        <div class="photo-card" data-index="10"><img src="https://picsum.photos/360/480?random=216" alt="" draggable="false"></div>
+        <div class="photo-card" data-index="11"><img src="https://picsum.photos/360/480?random=226" alt="" draggable="false"></div>
+        <div class="photo-card" data-index="12"><img src="https://picsum.photos/360/480?random=236" alt="" draggable="false"></div>
+        <div class="photo-card" data-index="13"><img src="https://picsum.photos/360/480?random=246" alt="" draggable="false"></div>
+        <div class="photo-card" data-index="14"><img src="https://picsum.photos/360/480?random=256" alt="" draggable="false"></div>
+        <div class="photo-card" data-index="15"><img src="https://picsum.photos/360/480?random=266" alt="" draggable="false"></div>
+        <div class="photo-card" data-index="16"><img src="https://picsum.photos/360/480?random=276" alt="" draggable="false"></div>
+        <div class="photo-card" data-index="17"><img src="https://picsum.photos/360/480?random=286" alt="" draggable="false"></div>
+    </div>
+    <div id="floating-photo-caption">
+        <span id="floating-caption-time"></span>
+        <span id="floating-caption-content"></span>
+    </div>
+    <div id="photo-tools">
+        <button id="photo-manager-button" type="button">照片管理</button>
+        <span id="photo-count">18 张</span>
+        <input id="photo-input" type="file" accept="image/*" multiple hidden>
+    </div>
+    <div id="photo-manager-panel" aria-hidden="true">
+        <div class="manager-header">
+            <div>
+                <div class="manager-title">照片管理</div>
+                <div id="manager-summary">上传照片后可逐张编辑时间和内容，留空则不显示字幕</div>
+            </div>
+            <div class="manager-actions">
+                <button id="manager-add-photo-button" type="button">添加照片</button>
+                <button id="manager-import-button" type="button">导入配置</button>
+                <button id="manager-export-button" type="button">导出配置</button>
+                <button id="manager-close-button" type="button">关闭</button>
+            </div>
+        </div>
+        <div id="photo-manager-grid"></div>
+    </div>
+    <div id="global-tools">
+        <button id="blow-candle-button" class="tool-button" type="button">吹灭蜡烛</button>
+        <button id="shape-toggle" class="tool-button" type="button">切换形态</button>
+        <span id="shape-label">照片球</span>
+        <button id="poster-button" class="tool-button" type="button">保存海报</button>
+        <button id="demo-toggle" class="tool-button" type="button">演示</button>
+        <button id="settings-toggle" class="tool-button" type="button">设置</button>
+    </div>
+    <input id="config-input" type="file" accept="application/json,.json" hidden>
+    <div id="settings-panel">
+        <div class="settings-title">自定义祝福</div>
+        <label class="settings-row">
+            第一段文字
+            <input id="greeting-line-1" type="text" maxlength="12" value="生日快乐">
+        </label>
+        <label class="settings-row">
+            第二段文字
+            <input id="greeting-line-2" type="text" maxlength="12" value="祝你开心">
+        </label>
+        <label class="settings-row">
+            环绕祝福
+            <textarea id="blessing-lines" maxlength="120">愿你一直闪闪发光
+所有美好如约而至
+今天的快乐永远发亮</textarea>
+        </label>
+        <div class="settings-actions">
+            <label class="sound-toggle">
+                <input id="sound-toggle" type="checkbox" checked>
+                音效
+            </label>
+            <button id="apply-settings" class="tool-button" type="button">应用</button>
+        </div>
+    </div>
+    <div id="poster-panel" aria-hidden="true">
+        <div class="poster-preview">
+            <canvas id="poster-preview-canvas" width="640" height="960"></canvas>
+        </div>
+        <div class="poster-controls">
+            <div class="poster-title">纪念海报</div>
+            <label class="poster-row">
+                海报模板
+                <select id="poster-template">
+                    <option value="orbit">星环宇宙</option>
+                    <option value="heart">爱心回忆</option>
+                    <option value="film">时间胶片</option>
+                    <option value="magazine">杂志封面</option>
+                    <option value="constellation">星座连线</option>
+                </select>
+            </label>
+            <label class="poster-row">
+                背景
+                <select id="poster-background">
+                    <option value="nebula">内置星云</option>
+                    <option value="blur">照片模糊背景</option>
+                    <option value="custom">自定义背景</option>
+                </select>
+            </label>
+            <label class="poster-row">
+                色彩风格
+                <select id="poster-style">
+                    <option value="blue">蓝色星云</option>
+                    <option value="pink">粉金微光</option>
+                    <option value="blackgold">黑金星光</option>
+                    <option value="whiteblue">清透白蓝</option>
+                </select>
+            </label>
+            <label class="poster-row">
+                海报标题
+                <input id="poster-title-input" type="text" maxlength="18" value="生日快乐">
+            </label>
+            <label class="poster-row">
+                清晰度
+                <select id="poster-quality">
+                    <option value="normal">普通</option>
+                    <option value="high" selected>高清</option>
+                </select>
+            </label>
+            <div class="poster-actions">
+                <button id="poster-bg-button" class="tool-button" type="button">上传背景</button>
+                <button id="poster-render-button" class="tool-button" type="button">刷新预览</button>
+                <button id="poster-download-button" class="tool-button" type="button">下载海报</button>
+                <button id="poster-close-button" class="tool-button" type="button">关闭</button>
+            </div>
+        </div>
+    </div>
+    <input id="poster-bg-input" type="file" accept="image/*" hidden>
+    <script>
+        (() => {
+            const canvas = document.getElementById("canvas");
+            const ctx = canvas.getContext("2d", { alpha: false });
+            const video = document.getElementById("webcam");
+            const statusMain = document.getElementById("status-main");
+            const statusSub = document.getElementById("status-sub");
+            const uiLayer = document.getElementById("ui-layer");
+            const pointer = document.getElementById("hand-pointer");
+            const loadingIndicator = document.getElementById("loading-indicator");
+            const loadingText = document.getElementById("loading-text");
+            const photoContainer = document.getElementById("photo-container");
+            const photoTools = document.getElementById("photo-tools");
+            const photoManagerButton = document.getElementById("photo-manager-button");
+            const photoManagerPanel = document.getElementById("photo-manager-panel");
+            const photoManagerGrid = document.getElementById("photo-manager-grid");
+            const managerAddPhotoButton = document.getElementById("manager-add-photo-button");
+            const managerImportButton = document.getElementById("manager-import-button");
+            const managerExportButton = document.getElementById("manager-export-button");
+            const managerCloseButton = document.getElementById("manager-close-button");
+            const photoInput = document.getElementById("photo-input");
+            const configInput = document.getElementById("config-input");
+            const photoCount = document.getElementById("photo-count");
+            const floatingPhotoCaption = document.getElementById("floating-photo-caption");
+            const floatingCaptionTime = document.getElementById("floating-caption-time");
+            const floatingCaptionContent = document.getElementById("floating-caption-content");
+            const settingsToggle = document.getElementById("settings-toggle");
+            const settingsPanel = document.getElementById("settings-panel");
+            const greetingInput1 = document.getElementById("greeting-line-1");
+            const greetingInput2 = document.getElementById("greeting-line-2");
+            const blessingInput = document.getElementById("blessing-lines");
+            const applySettings = document.getElementById("apply-settings");
+            const soundToggle = document.getElementById("sound-toggle");
+            const blowCandleButton = document.getElementById("blow-candle-button");
+            const shapeToggle = document.getElementById("shape-toggle");
+            const shapeLabel = document.getElementById("shape-label");
+            const posterButton = document.getElementById("poster-button");
+            const posterPanel = document.getElementById("poster-panel");
+            const posterPreviewCanvas = document.getElementById("poster-preview-canvas");
+            const posterTemplate = document.getElementById("poster-template");
+            const posterBackground = document.getElementById("poster-background");
+            const posterStyle = document.getElementById("poster-style");
+            const posterTitleInput = document.getElementById("poster-title-input");
+            const posterQuality = document.getElementById("poster-quality");
+            const posterBgButton = document.getElementById("poster-bg-button");
+            const posterRenderButton = document.getElementById("poster-render-button");
+            const posterDownloadButton = document.getElementById("poster-download-button");
+            const posterCloseButton = document.getElementById("poster-close-button");
+            const posterBgInput = document.getElementById("poster-bg-input");
+            const demoToggle = document.getElementById("demo-toggle");
+            let photoCards = Array.from(document.querySelectorAll(".photo-card"));
+
+            const sampleCanvas = document.createElement("canvas");
+            const sampleCtx = sampleCanvas.getContext("2d", { willReadFrequently: true });
+
+            const FOV = 360;
+            const CAMERA_DIST = 480;
+            const WORLD_SCALE = 2.05;
+            const MAX_DPR = 1.75;
+            const STORAGE_KEY = "particleBirthdayConfig.v3";
+            const PHOTO_SHAPES = [
+                { id: "sphere", label: "照片球" },
+                { id: "heart", label: "爱心" },
+                { id: "wall", label: "照片墙" },
+                { id: "timeline", label: "时间轴" }
+            ];
+            const STATE = {
+                IDLE: 0,
+                COUNTDOWN: 1,
+                BURST: 2,
+                CAKE: 3,
+                GLOBE: 4
+            };
+
+            let viewW = 1;
+            let viewH = 1;
+            let dpr = 1;
+            let currentState = STATE.IDLE;
+            let particles = [];
+            let backgroundStars = [];
+            let countdownNum = 3;
+            let countdownTimer = 0;
+            let scheduledTimers = [];
+            let angleX = 0;
+            let angleY = 0;
+            let targetAngleX = 0;
+            let targetAngleY = 0;
+            let handX = 0.5;
+            let handY = 0.5;
+            let isPinching = false;
+            let grabbedIndex = -1;
+            let currentPalmSize = 0.08;
+            let grabPalmBase = 0;
+            let grabbedScale = 1;
+            let pointerGrabScale = 1;
+            let grabStartedAt = 0;
+            let openFrames = 0;
+            let closedFrames = 0;
+            let peaceFrames = 0;
+            let previousPalmSize = 0.08;
+            let frameBusy = false;
+            let inputMode = "idle";
+            let lastInputAt = 0;
+            let lastGestureSentAt = 0;
+            let avgFrameMs = 16.7;
+            let lastFrameAt = 0;
+            let qualityScale = 1;
+            let transitionUntil = 0;
+            let shapeTransitionUntil = 0;
+            let currentShapeIndex = 0;
+            let timelineAutoOffset = 0;
+            let demoMode = false;
+            let greetingLine1 = "生日快乐";
+            let greetingLine2 = "祝你开心";
+            let blessingText = "愿你一直闪闪发光\n所有美好如约而至\n今天的快乐永远发亮";
+            let posterCustomBackground = "";
+            let soundEnabled = true;
+            let audioCtx = null;
+            let candleLit = true;
+            let candleSmoke = [];
+            let candleSparks = [];
+            let candleShockwaveStarted = 0;
+            let cakeEntryCount = 0;
+            let blowPromptTimer = 0;
+            let cakeAutoTimer = 0;
+            let cakeReadyAt = 0;
+            let cakeAutoEntering = false;
+            let gestureLockUntil = 0;
+            let shapeGestureLockUntil = 0;
+            let rotationCache = {
+                x: null,
+                y: null,
+                cosX: 1,
+                sinX: 0,
+                cosY: 1,
+                sinY: 0
+            };
+
+            // ═══════════════════════════════════════
+            // 工具函数
+            // ═══════════════════════════════════════
+            const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+            const lerp = (a, b, t) => a + (b - a) * t;
+            const distance3D = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, (a.z || 0) - (b.z || 0));
+
+            function setStatus(main, sub = "") {
+                statusMain.textContent = main;
+                statusSub.textContent = sub;
+                statusSub.style.display = sub ? "block" : "none";
+            }
+
+            function ensureAudio() {
+                if (!soundEnabled) return null;
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContextClass) return null;
+                if (!audioCtx) audioCtx = new AudioContextClass();
+                if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+                return audioCtx;
+            }
+
+            function playTone(type = "tap") {
+                const actx = ensureAudio();
+                if (!actx) return;
+                const now = actx.currentTime;
+                const osc = actx.createOscillator();
+                const gain = actx.createGain();
+                const filter = actx.createBiquadFilter();
+
+                const toneMap = {
+                    tap: [520, 760, 0.08, 0.08],
+                    burst: [180, 920, 0.42, 0.18],
+                    grab: [660, 420, 0.16, 0.1],
+                    open: [420, 880, 0.22, 0.12],
+                    candle: [260, 120, 0.55, 0.16],
+                    apply: [620, 920, 0.12, 0.09],
+                    shape: [360, 980, 0.2, 0.11]
+                };
+                const [startFreq, endFreq, duration, volume] = toneMap[type] || toneMap.tap;
+
+                osc.type = type === "candle" ? "triangle" : "sine";
+                filter.type = "lowpass";
+                filter.frequency.setValueAtTime(type === "burst" ? 1800 : 1300, now);
+                osc.frequency.setValueAtTime(startFreq, now);
+                osc.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq), now + duration);
+                gain.gain.setValueAtTime(0.0001, now);
+                gain.gain.exponentialRampToValueAtTime(volume, now + 0.015);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(actx.destination);
+                osc.start(now);
+                osc.stop(now + duration + 0.02);
+            }
+
+            // ═══════════════════════════════════════
+            // 照片配置与DOM管理
+            // ═══════════════════════════════════════
+            function updatePhotoCount() {
+                photoCount.textContent = `${photoCards.length} 张`;
+            }
+
+            function currentShape() {
+                return PHOTO_SHAPES[currentShapeIndex] || PHOTO_SHAPES[0];
+            }
+
+            function updateShapeLabel() {
+                shapeLabel.textContent = currentShape().label;
+            }
+
+            function serializePhoto(card) {
+                const img = card.querySelector("img");
+                return {
+                    src: img?.src || "",
+                    name: card.dataset.name || "",
+                    time: card.dataset.time || "",
+                    content: card.dataset.content || "",
+                    featured: card.dataset.featured === "true",
+                    width: Number(card.dataset.width || 0),
+                    height: Number(card.dataset.height || 0)
+                };
+            }
+
+            function saveConfig() {
+                try {
+                    const data = {
+                        version: 3,
+                        greetingLine1,
+                        greetingLine2,
+                        blessingText,
+                        soundEnabled,
+                        currentShapeIndex,
+                        photos: photoCards.map(serializePhoto)
+                    };
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                } catch (error) {
+                    // Large uploaded photos can exceed browser storage; the page still works for the current session.
+                }
+            }
+
+            function createPhotoCard(photo = {}) {
+                const card = document.createElement("div");
+                card.className = "photo-card";
+                card.dataset.index = String(photoCards.length);
+                card.dataset.name = photo.name || "照片";
+                card.dataset.time = photo.time || "";
+                card.dataset.content = photo.content || "";
+                card.dataset.featured = photo.featured ? "true" : "false";
+                card.classList.toggle("is-featured", Boolean(photo.featured));
+                if (photo.width && photo.height) {
+                    card.dataset.width = String(photo.width);
+                    card.dataset.height = String(photo.height);
+                    card.style.setProperty("--photo-aspect", `${photo.width} / ${photo.height}`);
+                }
+
+                const img = document.createElement("img");
+                img.src = photo.src || "";
+                img.alt = "";
+                img.draggable = false;
+                img.onload = () => {
+                    applyPhotoAspect(card, img);
+                    saveConfig();
+                };
+
+                card.appendChild(img);
+                ensurePhotoCaption(card);
+                renderPhotoCaption(card);
+                return card;
+            }
+
+            function loadConfig() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (!raw) return;
+                    const data = JSON.parse(raw);
+                    if (!data || !Array.isArray(data.photos) || data.photos.length === 0) return;
+
+                    greetingLine1 = (data.greetingLine1 || greetingLine1).slice(0, 12);
+                    greetingLine2 = (data.greetingLine2 || greetingLine2).slice(0, 12);
+                    blessingText = (data.blessingText || blessingText).slice(0, 120);
+                    soundEnabled = data.soundEnabled !== false;
+                    currentShapeIndex = clamp(Number(data.currentShapeIndex || 0), 0, PHOTO_SHAPES.length - 1);
+                    demoMode = false;
+                    greetingInput1.value = greetingLine1;
+                    greetingInput2.value = greetingLine2;
+                    blessingInput.value = blessingText;
+                    soundToggle.checked = soundEnabled;
+                    document.body.classList.remove("demo-mode");
+                    demoToggle.textContent = "演示";
+                    updateShapeLabel();
+                    invalidateBlessingCache();
+
+                    photoContainer.innerHTML = "";
+                    data.photos.forEach(photo => {
+                        if (photo.src) photoContainer.appendChild(createPhotoCard(photo));
+                    });
+                    refreshPhotoCards();
+                } catch (error) {
+                    localStorage.removeItem(STORAGE_KEY);
+                }
+            }
+
+            function buildPhotoManagerList() {
+                photoManagerGrid.innerHTML = "";
+                photoCards.forEach((card, index) => {
+                    const img = card.querySelector("img");
+                    const item = document.createElement("div");
+                    item.className = "manager-card";
+                    item.dataset.index = String(index);
+                    item.classList.toggle("is-featured", card.dataset.featured === "true");
+
+                    const thumb = document.createElement("img");
+                    thumb.src = img?.currentSrc || img?.src || "";
+                    thumb.alt = "";
+
+                    const fields = document.createElement("div");
+                    fields.className = "manager-fields";
+
+                    const timeLabel = document.createElement("label");
+                    timeLabel.textContent = `照片 ${index + 1} 时间`;
+                    const timeInput = document.createElement("input");
+                    timeInput.type = "text";
+                    timeInput.maxLength = 24;
+                    timeInput.placeholder = "例如 2026.05.27";
+                    timeInput.value = card.dataset.time || "";
+
+                    const contentLabel = document.createElement("label");
+                    contentLabel.textContent = "内容";
+                    const contentInput = document.createElement("input");
+                    contentInput.type = "text";
+                    contentInput.maxLength = 48;
+                    contentInput.placeholder = "例如 一起许愿的瞬间";
+                    contentInput.value = card.dataset.content || "";
+
+                    timeInput.addEventListener("input", () => {
+                        card.dataset.time = timeInput.value.trim().slice(0, 24);
+                        renderPhotoCaption(card);
+                        saveConfig();
+                    });
+                    contentInput.addEventListener("input", () => {
+                        card.dataset.content = contentInput.value.trim().slice(0, 48);
+                        renderPhotoCaption(card);
+                        saveConfig();
+                    });
+
+                    const actions = document.createElement("div");
+                    actions.className = "manager-card-actions";
+
+                    const upButton = document.createElement("button");
+                    upButton.className = "manager-mini-button";
+                    upButton.type = "button";
+                    upButton.textContent = "上移";
+                    upButton.disabled = index === 0;
+                    upButton.addEventListener("click", () => movePhoto(index, -1));
+
+                    const downButton = document.createElement("button");
+                    downButton.className = "manager-mini-button";
+                    downButton.type = "button";
+                    downButton.textContent = "下移";
+                    downButton.disabled = index === photoCards.length - 1;
+                    downButton.addEventListener("click", () => movePhoto(index, 1));
+
+                    const featureButton = document.createElement("button");
+                    featureButton.className = `manager-mini-button${card.dataset.featured === "true" ? " is-active" : ""}`;
+                    featureButton.type = "button";
+                    featureButton.textContent = card.dataset.featured === "true" ? "重点中" : "设重点";
+                    featureButton.addEventListener("click", () => toggleFeaturedPhoto(index));
+
+                    const deleteButton = document.createElement("button");
+                    deleteButton.className = "manager-mini-button is-danger";
+                    deleteButton.type = "button";
+                    deleteButton.textContent = "删除";
+                    deleteButton.addEventListener("click", () => deletePhoto(index));
+
+                    actions.appendChild(upButton);
+                    actions.appendChild(downButton);
+                    actions.appendChild(featureButton);
+                    actions.appendChild(deleteButton);
+
+                    timeLabel.appendChild(timeInput);
+                    contentLabel.appendChild(contentInput);
+                    fields.appendChild(timeLabel);
+                    fields.appendChild(contentLabel);
+                    fields.appendChild(actions);
+                    item.appendChild(thumb);
+                    item.appendChild(fields);
+                    photoManagerGrid.appendChild(item);
+                });
+            }
+
+            function openPhotoManager() {
+                buildPhotoManagerList();
+                photoManagerPanel.classList.add("is-open");
+                photoManagerPanel.setAttribute("aria-hidden", "false");
+                playTone("open");
+            }
+
+            function closePhotoManager() {
+                photoManagerPanel.classList.remove("is-open");
+                photoManagerPanel.setAttribute("aria-hidden", "true");
+            }
+
+            function rebuildPhotoState() {
+                refreshPhotoCards();
+                saveConfig();
+                if (currentState === STATE.GLOBE) {
+                    setParticlesFromPoints(getNebulaSpherePoints(), "nebula", Math.round(1850 * qualityScale));
+                }
+            }
+
+            function movePhoto(index, direction) {
+                const targetIndex = index + direction;
+                if (targetIndex < 0 || targetIndex >= photoCards.length) return;
+                const card = photoCards[index];
+                const target = photoCards[targetIndex];
+                if (direction < 0) {
+                    photoContainer.insertBefore(card, target);
+                } else {
+                    photoContainer.insertBefore(target, card);
+                }
+                rebuildPhotoState();
+                playTone("tap");
+            }
+
+            function deletePhoto(index) {
+                const card = photoCards[index];
+                if (!card) return;
+                card.remove();
+                rebuildPhotoState();
+                playTone("tap");
+            }
+
+            function toggleFeaturedPhoto(index) {
+                const card = photoCards[index];
+                if (!card) return;
+                const featured = card.dataset.featured !== "true";
+                card.dataset.featured = featured ? "true" : "false";
+                card.classList.toggle("is-featured", featured);
+                rebuildPhotoState();
+                playTone("apply");
+            }
+
+            function exportConfig() {
+                const data = {
+                    version: 3,
+                    exportedAt: new Date().toISOString(),
+                    greetingLine1,
+                    greetingLine2,
+                    blessingText,
+                    soundEnabled,
+                    currentShapeIndex,
+                    photos: photoCards.map(serializePhoto)
+                };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = "birthday-particle-config.json";
+                link.click();
+                URL.revokeObjectURL(link.href);
+                playTone("apply");
+            }
+
+            function applyImportedConfig(data) {
+                if (!data || !Array.isArray(data.photos)) return;
+                greetingLine1 = (data.greetingLine1 || greetingLine1).slice(0, 12);
+                greetingLine2 = (data.greetingLine2 || greetingLine2).slice(0, 12);
+                blessingText = (data.blessingText || blessingText).slice(0, 120);
+                soundEnabled = data.soundEnabled !== false;
+                currentShapeIndex = clamp(Number(data.currentShapeIndex || 0), 0, PHOTO_SHAPES.length - 1);
+                greetingInput1.value = greetingLine1;
+                greetingInput2.value = greetingLine2;
+                blessingInput.value = blessingText;
+                soundToggle.checked = soundEnabled;
+                updateShapeLabel();
+                invalidateBlessingCache();
+
+                photoContainer.innerHTML = "";
+                data.photos.forEach(photo => {
+                    if (photo.src) photoContainer.appendChild(createPhotoCard(photo));
+                });
+                refreshPhotoCards();
+                buildPhotoManagerList();
+                saveConfig();
+                if (currentState === STATE.GLOBE) {
+                    setParticlesFromPoints(getNebulaSpherePoints(), "nebula", Math.round(1850 * qualityScale), { fromExisting: true });
+                }
+                setStatus("配置已导入", "照片、文字和当前形态已更新");
+                playTone("apply");
+            }
+
+            function hideFloatingPhotoCaption() {
+                floatingPhotoCaption.style.display = "none";
+            }
+
+            function showFloatingPhotoCaption(card, centerX, centerY, renderedHeight) {
+                const time = (card.dataset.time || "").trim();
+                const content = (card.dataset.content || "").trim();
+                if (!time && !content) {
+                    hideFloatingPhotoCaption();
+                    return;
+                }
+
+                floatingCaptionTime.textContent = time;
+                floatingCaptionTime.style.display = time ? "block" : "none";
+                floatingCaptionContent.textContent = content;
+                floatingCaptionContent.style.display = content ? "block" : "none";
+
+                const belowY = centerY + renderedHeight / 2 + 14;
+                const placeAbove = belowY > viewH - 76;
+                floatingPhotoCaption.classList.toggle("is-above", placeAbove);
+                floatingPhotoCaption.style.left = `${clamp(centerX, 18, viewW - 18)}px`;
+                floatingPhotoCaption.style.top = `${placeAbove ? centerY - renderedHeight / 2 - 12 : belowY}px`;
+                floatingPhotoCaption.style.display = "block";
+            }
+
+            function ensurePhotoCaption(card) {
+                let caption = card.querySelector(".photo-caption");
+                if (!caption) {
+                    caption = document.createElement("div");
+                    caption.className = "photo-caption";
+                    caption.innerHTML = '<span class="caption-time"></span><span class="caption-content"></span>';
+                    card.appendChild(caption);
+                }
+                return caption;
+            }
+
+            function renderPhotoCaption(card) {
+                const caption = ensurePhotoCaption(card);
+                const time = (card.dataset.time || "").trim();
+                const content = (card.dataset.content || "").trim();
+                const hasCaption = Boolean(time || content);
+                caption.querySelector(".caption-time").textContent = time;
+                caption.querySelector(".caption-time").style.display = time ? "block" : "none";
+                caption.querySelector(".caption-content").textContent = content;
+                caption.querySelector(".caption-content").style.display = content ? "block" : "none";
+                card.classList.toggle("has-caption", hasCaption);
+            }
+
+            function editPhotoCaption(index) {
+                const card = photoCards[index];
+                if (!card) {
+                    openPhotoManager();
+                    return;
+                }
+                openPhotoManager();
+                window.setTimeout(() => {
+                    const item = photoManagerGrid.querySelector(`[data-index="${index}"] input`);
+                    item?.focus();
+                }, 60);
+            }
+
+            function applyPhotoAspect(card, img) {
+                const width = img.naturalWidth || 9;
+                const height = img.naturalHeight || 16;
+                const ratio = width / height;
+                card.style.setProperty("--photo-aspect", `${width} / ${height}`);
+                card.classList.toggle("is-landscape", ratio > 1.18);
+                card.classList.toggle("is-square", ratio >= 0.86 && ratio <= 1.18);
+                card.classList.toggle("is-portrait", ratio < 0.86);
+                card.dataset.width = String(width);
+                card.dataset.height = String(height);
+            }
+
+            function refreshPhotoCards() {
+                photoCards = Array.from(document.querySelectorAll(".photo-card"));
+                photoCards.forEach((card, index) => {
+                    card.dataset.index = String(index);
+                    card.classList.toggle("is-featured", card.dataset.featured === "true");
+                    const img = card.querySelector("img");
+                    ensurePhotoCaption(card);
+                    renderPhotoCaption(card);
+                    if (img) {
+                        img.onload = () => applyPhotoAspect(card, img);
+                        if (img.complete && img.naturalWidth) applyPhotoAspect(card, img);
+                    }
+                });
+                updatePhotoCount();
+                if (photoManagerPanel.classList.contains("is-open")) buildPhotoManagerList();
+            }
+
+            function addPhotoUrl(url, name = "自定义图片") {
+                const card = createPhotoCard({ src: url, name, time: "", content: "", featured: false });
+                photoContainer.appendChild(card);
+                refreshPhotoCards();
+                saveConfig();
+            }
+
+            function compressImageFile(file, maxSize = 1200, quality = 0.82) {
+                return new Promise(resolve => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const scale = Math.min(1, maxSize / Math.max(img.naturalWidth, img.naturalHeight));
+                            if (scale >= 1 && file.size < 650000) {
+                                resolve({ src: reader.result, width: img.naturalWidth, height: img.naturalHeight });
+                                return;
+                            }
+                            const c = document.createElement("canvas");
+                            c.width = Math.max(1, Math.round(img.naturalWidth * scale));
+                            c.height = Math.max(1, Math.round(img.naturalHeight * scale));
+                            const cctx = c.getContext("2d");
+                            cctx.drawImage(img, 0, 0, c.width, c.height);
+                            resolve({ src: c.toDataURL("image/jpeg", quality), width: c.width, height: c.height });
+                        };
+                        img.onerror = () => resolve({ src: reader.result, width: 0, height: 0 });
+                        img.src = reader.result;
+                    };
+                    reader.onerror = () => resolve(null);
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            async function addPhotoFiles(files) {
+                const imageFiles = Array.from(files).filter(file => file.type.startsWith("image/"));
+                for (const file of imageFiles) {
+                    const compressed = await compressImageFile(file);
+                    if (!compressed) continue;
+                    const card = createPhotoCard({
+                        src: compressed.src,
+                        name: file.name || "自定义图片",
+                        time: "",
+                        content: "",
+                        featured: false,
+                        width: compressed.width,
+                        height: compressed.height
+                    });
+                    photoContainer.appendChild(card);
+                }
+                refreshPhotoCards();
+                saveConfig();
+                if (currentState === STATE.GLOBE) {
+                    setParticlesFromPoints(getNebulaSpherePoints(), "nebula", Math.round(1850 * qualityScale));
+                }
+            }
+
+            function applyGreetingSettings() {
+                greetingLine1 = (greetingInput1.value || "生日快乐").trim().slice(0, 12) || "生日快乐";
+                greetingLine2 = (greetingInput2.value || "祝你开心").trim().slice(0, 12) || "祝你开心";
+                blessingText = (blessingInput.value || "").trim().slice(0, 120) || "愿你一直闪闪发光\n所有美好如约而至\n今天的快乐永远发亮";
+                greetingInput1.value = greetingLine1;
+                greetingInput2.value = greetingLine2;
+                blessingInput.value = blessingText;
+                soundEnabled = soundToggle.checked;
+                invalidateBlessingCache();
+                playTone("apply");
+                saveConfig();
+                if (currentState === STATE.CAKE) {
+                    showCake();
+                } else if (currentState === STATE.COUNTDOWN) {
+                    morphTo3DCount(countdownNum);
+                }
+            }
+
+            let cachedBlessingMessages = null;
+            function invalidateBlessingCache() {
+                cachedBlessingMessages = null;
+            }
+            function getBlessingMessages() {
+                if (cachedBlessingMessages) return cachedBlessingMessages;
+                const lines = blessingText
+                    .split(/\n+/)
+                    .map(line => line.trim())
+                    .filter(Boolean)
+                    .slice(0, 6);
+                cachedBlessingMessages = [greetingLine1, greetingLine2].concat(lines).filter(Boolean);
+                return cachedBlessingMessages;
+            }
+
+            function roundedRectPath(targetCtx, x, y, w, h, r) {
+                targetCtx.beginPath();
+                targetCtx.moveTo(x + r, y);
+                targetCtx.lineTo(x + w - r, y);
+                targetCtx.quadraticCurveTo(x + w, y, x + w, y + r);
+                targetCtx.lineTo(x + w, y + h - r);
+                targetCtx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                targetCtx.lineTo(x + r, y + h);
+                targetCtx.quadraticCurveTo(x, y + h, x, y + h - r);
+                targetCtx.lineTo(x, y + r);
+                targetCtx.quadraticCurveTo(x, y, x + r, y);
+            }
+
+            function drawPosterPhoto(pctx, card, x, y, w, h, rotate = 0) {
+                const img = card.querySelector("img");
+                pctx.save();
+                pctx.translate(x + w / 2, y + h / 2);
+                pctx.rotate(rotate);
+                roundedRectPath(pctx, -w / 2, -h / 2, w, h, 18);
+                pctx.fillStyle = "rgba(230, 255, 255, 0.14)";
+                pctx.fill();
+                pctx.lineWidth = 5;
+                pctx.strokeStyle = card.dataset.featured === "true" ? "rgba(255, 232, 130, 0.88)" : "rgba(190, 255, 255, 0.72)";
+                pctx.stroke();
+                pctx.clip();
+                if (img && img.complete && (img.src.startsWith("data:") || img.src.startsWith("blob:") || img.src.startsWith(location.origin))) {
+                    const iw = img.naturalWidth || w;
+                    const ih = img.naturalHeight || h;
+                    const cover = Math.max(w / iw, h / ih);
+                    const dw = iw * cover;
+                    const dh = ih * cover;
+                    pctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
+                } else {
+                    const grad = pctx.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2);
+                    grad.addColorStop(0, "rgba(117, 245, 255, 0.82)");
+                    grad.addColorStop(0.48, "rgba(55, 93, 235, 0.52)");
+                    grad.addColorStop(1, "rgba(255, 229, 160, 0.58)");
+                    pctx.fillStyle = grad;
+                    pctx.fillRect(-w / 2, -h / 2, w, h);
+                    pctx.fillStyle = "rgba(255,255,255,0.82)";
+                    pctx.font = "800 34px Microsoft YaHei, sans-serif";
+                    pctx.textAlign = "center";
+                    pctx.textBaseline = "middle";
+                    pctx.fillText("PHOTO", 0, 0);
+                }
+                pctx.restore();
+            }
+
+            // ═══════════════════════════════════════
+            // 海报渲染系统
+            // ═══════════════════════════════════════
+            function posterPalette(style) {
+                const palettes = {
+                    blue: {
+                        bg: ["#030817", "#091132", "#02030a"],
+                        glow: "rgba(91, 247, 255, 0.34)",
+                        line: "rgba(120, 250, 255, 0.42)",
+                        title: "#efffff",
+                        sub: "rgba(211, 255, 255, 0.9)"
+                    },
+                    pink: {
+                        bg: ["#120713", "#301527", "#07030a"],
+                        glow: "rgba(255, 167, 211, 0.34)",
+                        line: "rgba(255, 224, 156, 0.42)",
+                        title: "#fff3f8",
+                        sub: "rgba(255, 226, 185, 0.9)"
+                    },
+                    blackgold: {
+                        bg: ["#030303", "#17120a", "#050402"],
+                        glow: "rgba(255, 205, 92, 0.28)",
+                        line: "rgba(255, 218, 126, 0.48)",
+                        title: "#fff4d2",
+                        sub: "rgba(255, 227, 160, 0.86)"
+                    },
+                    whiteblue: {
+                        bg: ["#eafcff", "#bfeeff", "#f8feff"],
+                        glow: "rgba(67, 194, 255, 0.24)",
+                        line: "rgba(30, 142, 205, 0.34)",
+                        title: "#073248",
+                        sub: "rgba(16, 86, 126, 0.82)"
+                    }
+                };
+                return palettes[style] || palettes.blue;
+            }
+
+            function loadPosterImage(src) {
+                return new Promise(resolve => {
+                    if (!src) {
+                        resolve(null);
+                        return;
+                    }
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = () => resolve(null);
+                    img.src = src;
+                });
+            }
+
+            function firstDrawablePosterPhoto() {
+                return photoCards.find(card => {
+                    const src = card.querySelector("img")?.src || "";
+                    return src.startsWith("data:") || src.startsWith("blob:") || src.startsWith(location.origin);
+                }) || null;
+            }
+
+            function drawPosterBackground(pctx, w, h, palette, bgImage) {
+                const bg = pctx.createLinearGradient(0, 0, w, h);
+                bg.addColorStop(0, palette.bg[0]);
+                bg.addColorStop(0.52, palette.bg[1]);
+                bg.addColorStop(1, palette.bg[2]);
+                pctx.fillStyle = bg;
+                pctx.fillRect(0, 0, w, h);
+
+                if (bgImage) {
+                    pctx.save();
+                    pctx.globalAlpha = 0.46;
+                    pctx.filter = "blur(18px) saturate(1.2)";
+                    const cover = Math.max(w / bgImage.naturalWidth, h / bgImage.naturalHeight);
+                    const dw = bgImage.naturalWidth * cover;
+                    const dh = bgImage.naturalHeight * cover;
+                    pctx.drawImage(bgImage, (w - dw) / 2, (h - dh) / 2, dw, dh);
+                    pctx.restore();
+                }
+
+                for (let i = 0; i < 280; i++) {
+                    const x = Math.random() * w;
+                    const y = Math.random() * h;
+                    pctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.38 + 0.12})`;
+                    pctx.beginPath();
+                    pctx.arc(x, y, Math.random() * 1.7 + 0.45, 0, Math.PI * 2);
+                    pctx.fill();
+                }
+
+                const glow = pctx.createRadialGradient(w / 2, h * 0.43, 0, w / 2, h * 0.43, w * 0.55);
+                glow.addColorStop(0, palette.glow);
+                glow.addColorStop(1, "rgba(0,0,0,0)");
+                pctx.fillStyle = glow;
+                pctx.fillRect(0, h * 0.1, w, h * 0.7);
+            }
+
+            function drawPosterTitles(pctx, w, palette, title) {
+                pctx.textAlign = "center";
+                pctx.textBaseline = "middle";
+                pctx.shadowBlur = 26;
+                pctx.shadowColor = palette.glow;
+                pctx.fillStyle = palette.title;
+                pctx.font = `900 ${Math.round(w * 0.078)}px Microsoft YaHei, PingFang SC, sans-serif`;
+                pctx.fillText(title || greetingLine1 || "生日快乐", w / 2, w * 0.14);
+                pctx.font = `800 ${Math.round(w * 0.036)}px Microsoft YaHei, PingFang SC, sans-serif`;
+                pctx.fillStyle = palette.sub;
+                pctx.fillText(greetingLine2 || "祝你开心", w / 2, w * 0.2);
+                pctx.shadowBlur = 0;
+            }
+
+            function selectedPosterPhotos() {
+                const featured = photoCards.filter(card => card.dataset.featured === "true");
+                const base = featured.length ? featured.concat(photoCards.filter(card => card.dataset.featured !== "true")) : photoCards;
+                return base.slice(0, 16);
+            }
+
+            function drawTemplateOrbit(pctx, photos, w, h, palette) {
+                const cx = w / 2;
+                const cy = h * 0.44;
+                pctx.strokeStyle = palette.line;
+                pctx.lineWidth = w * 0.003;
+                pctx.setLineDash([w * 0.012, w * 0.014]);
+                pctx.beginPath();
+                pctx.ellipse(cx, cy, w * 0.31, h * 0.13, 0, 0, Math.PI * 2);
+                pctx.stroke();
+                pctx.setLineDash([]);
+                photos.slice(0, 12).forEach((card, index, arr) => {
+                    const a = -Math.PI / 2 + index * Math.PI * 2 / arr.length;
+                    const ring = index % 3 === 0 ? w * 0.3 : w * 0.23;
+                    const pw = index % 3 === 0 ? w * 0.105 : w * 0.085;
+                    drawPosterPhoto(pctx, card, cx + Math.cos(a) * ring - pw / 2, cy + Math.sin(a) * ring * 0.72 - pw * 0.68, pw, pw * 1.36, Math.sin(a) * 0.18);
+                });
+            }
+
+            function drawTemplateHeart(pctx, photos, w, h) {
+                const cx = w / 2;
+                const cy = h * 0.43;
+                photos.slice(0, 15).forEach((card, index, arr) => {
+                    const a = Math.PI * 2 * index / arr.length;
+                    const s = w * 0.018;
+                    const x = cx + 16 * Math.pow(Math.sin(a), 3) * s;
+                    const y = cy - (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * s * 0.9;
+                    const pw = index % 4 === 0 ? w * 0.096 : w * 0.078;
+                    drawPosterPhoto(pctx, card, x - pw / 2, y - pw * 0.68, pw, pw * 1.34, Math.sin(a) * 0.16);
+                });
+            }
+
+            function drawTemplateFilm(pctx, photos, w, h, palette) {
+                const startY = h * 0.35;
+                const stripH = h * 0.29;
+                pctx.fillStyle = "rgba(0,0,0,0.38)";
+                roundedRectPath(pctx, w * 0.08, startY, w * 0.84, stripH, w * 0.025);
+                pctx.fill();
+                pctx.strokeStyle = palette.line;
+                pctx.lineWidth = w * 0.003;
+                pctx.stroke();
+                const count = Math.min(6, photos.length);
+                const gap = w * 0.018;
+                const pw = (w * 0.76 - gap * (count - 1)) / Math.max(1, count);
+                photos.slice(0, count).forEach((card, index) => {
+                    drawPosterPhoto(pctx, card, w * 0.12 + index * (pw + gap), startY + stripH * 0.13, pw, stripH * 0.74, 0);
+                });
+            }
+
+            function drawTemplateMagazine(pctx, photos, w, h) {
+                const main = photos[0];
+                if (main) drawPosterPhoto(pctx, main, w * 0.16, h * 0.29, w * 0.68, h * 0.43, 0);
+                photos.slice(1, 6).forEach((card, index) => {
+                    const pw = w * 0.13;
+                    const x = index % 2 ? w * 0.75 : w * 0.12;
+                    const y = h * (0.32 + index * 0.075);
+                    drawPosterPhoto(pctx, card, x, y, pw, pw * 1.28, (index % 2 ? 1 : -1) * 0.12);
+                });
+            }
+
+            function drawTemplateConstellation(pctx, photos, w, h, palette) {
+                const points = photos.slice(0, 12).map((card, index, arr) => ({
+                    card,
+                    x: w * (0.18 + (index % 4) * 0.21 + Math.sin(index) * 0.03),
+                    y: h * (0.32 + Math.floor(index / 4) * 0.13 + Math.cos(index * 1.7) * 0.03),
+                    size: index % 4 === 0 ? w * 0.105 : w * 0.074
+                }));
+                pctx.strokeStyle = palette.line;
+                pctx.lineWidth = w * 0.0025;
+                pctx.beginPath();
+                points.forEach((point, index) => {
+                    if (index === 0) pctx.moveTo(point.x, point.y);
+                    else pctx.lineTo(point.x, point.y);
+                });
+                pctx.stroke();
+                points.forEach((point, index) => drawPosterPhoto(pctx, point.card, point.x - point.size / 2, point.y - point.size * 0.66, point.size, point.size * 1.32, Math.sin(index) * 0.15));
+            }
+
+            async function renderPosterCanvas(targetCanvas, high = false) {
+                const w = high ? 1600 : 640;
+                const h = high ? 2400 : 960;
+                targetCanvas.width = w;
+                targetCanvas.height = h;
+                const pctx = targetCanvas.getContext("2d");
+                const palette = posterPalette(posterStyle.value);
+                const photos = selectedPosterPhotos();
+                let bgImage = null;
+                if (posterBackground.value === "custom") bgImage = await loadPosterImage(posterCustomBackground);
+                if (posterBackground.value === "blur") {
+                    const card = firstDrawablePosterPhoto();
+                    bgImage = await loadPosterImage(card?.querySelector("img")?.src || "");
+                }
+                drawPosterBackground(pctx, w, h, palette, bgImage);
+                drawPosterTitles(pctx, w, palette, posterTitleInput.value.trim() || greetingLine1);
+
+                const template = posterTemplate.value;
+                if (template === "heart") drawTemplateHeart(pctx, photos, w, h, palette);
+                else if (template === "film") drawTemplateFilm(pctx, photos, w, h, palette);
+                else if (template === "magazine") drawTemplateMagazine(pctx, photos, w, h, palette);
+                else if (template === "constellation") drawTemplateConstellation(pctx, photos, w, h, palette);
+                else drawTemplateOrbit(pctx, photos, w, h, palette);
+
+                pctx.textAlign = "center";
+                pctx.fillStyle = palette.title;
+                pctx.font = `900 ${Math.round(w * 0.042)}px Microsoft YaHei, PingFang SC, sans-serif`;
+                const templateName = posterTemplate.options[posterTemplate.selectedIndex]?.textContent || "纪念海报";
+                pctx.fillText(templateName + " · 回忆宇宙", w / 2, h * 0.72);
+                pctx.fillStyle = palette.sub;
+                pctx.font = `700 ${Math.round(w * 0.024)}px Microsoft YaHei, PingFang SC, sans-serif`;
+                getBlessingMessages().slice(2, 5).forEach((line, index) => {
+                    pctx.fillText(line, w / 2, h * 0.765 + index * h * 0.035);
+                });
+                pctx.fillStyle = palette.sub;
+                pctx.font = `700 ${Math.round(w * 0.019)}px Microsoft YaHei, sans-serif`;
+                pctx.fillText(new Date().toLocaleDateString("zh-CN"), w / 2, h * 0.925);
+            }
+
+            async function refreshPosterPreview() {
+                await renderPosterCanvas(posterPreviewCanvas, false);
+            }
+
+            function openPosterPanel() {
+                posterTitleInput.value = posterTitleInput.value || greetingLine1 || "生日快乐";
+                posterPanel.classList.add("is-open");
+                posterPanel.setAttribute("aria-hidden", "false");
+                refreshPosterPreview();
+                playTone("tap");
+            }
+
+            async function downloadPoster() {
+                const poster = document.createElement("canvas");
+                await renderPosterCanvas(poster, posterQuality.value === "high");
+                poster.toBlob(blob => {
+                    if (!blob) return;
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(blob);
+                    link.download = "birthday-memory-poster.png";
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                }, "image/png");
+                setStatus("纪念海报已生成", "已按当前模板和背景导出");
+                playTone("apply");
+            }
+
+            function spawnCandleSmoke() {
+                const s = clamp(Math.min(viewW / 620, viewH / 560), 0.9, 1.34);
+                const topY = (68 - 186) * s;
+                for (let i = 0; i < 96; i++) {
+                    candleSmoke.push({
+                        x: (Math.random() - 0.5) * 30,
+                        y: topY + (Math.random() - 0.5) * 18,
+                        z: (Math.random() - 0.5) * 28,
+                        vx: (Math.random() - 0.5) * 0.48,
+                        vy: -0.7 - Math.random() * 1.15,
+                        vz: (Math.random() - 0.5) * 0.35,
+                        alpha: 0.74 + Math.random() * 0.24,
+                        size: 3.5 + Math.random() * 6.5
+                    });
+                }
+                for (let i = 0; i < 48; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 1.4 + Math.random() * 3.2;
+                    candleSparks.push({
+                        x: (Math.random() - 0.5) * 10,
+                        y: topY,
+                        z: (Math.random() - 0.5) * 10,
+                        vx: Math.cos(angle) * speed,
+                        vy: -Math.random() * 2.2,
+                        vz: Math.sin(angle) * speed,
+                        alpha: 0.95,
+                        size: 1.4 + Math.random() * 1.8,
+                        color: Math.random() > 0.5 ? "#fff4a8" : "#75f8ff"
+                    });
+                }
+                candleShockwaveStarted = performance.now();
+            }
+
+            function showWishCompleteText() {
+                const size = clamp(viewW / 7.2, 52, 92);
+                const y = -clamp(viewH * 0.08, 42, 78);
+                setParticlesFromPoints(getExtrudedText3DPoints("许愿完成", size, 24, y, 0), "text", 2600, { fromExisting: true });
+                playTone("open");
+            }
+
+            function blowOutCandle() {
+                if (currentState !== STATE.CAKE || cakeEntryCount !== 1 || !candleLit || cakeAutoEntering) return;
+                candleLit = false;
+                cakeAutoEntering = true;
+                openFrames = 0;
+                gestureLockUntil = performance.now() + 1800;
+                spawnCandleSmoke();
+                playTone("candle");
+                blowCandleButton.style.display = "none";
+                window.clearTimeout(blowPromptTimer);
+                window.clearTimeout(cakeAutoTimer);
+                setStatus("蜡烛已吹灭", "烟雾散开后自动进入照片星球");
+                cakeAutoTimer = window.setTimeout(() => {
+                    if (currentState === STATE.CAKE) showWishCompleteText();
+                }, 780);
+                cakeAutoTimer = window.setTimeout(() => {
+                    if (currentState === STATE.CAKE) {
+                        cakeAutoEntering = false;
+                        showGlobe();
+                    }
+                }, 2200);
+            }
+
+            function relightCandle() {
+                if (currentState !== STATE.CAKE) return;
+                candleLit = true;
+                candleSmoke = [];
+                playTone("open");
+                blowCandleButton.textContent = "吹灭蜡烛";
+                setStatus("蜡烛已重新点燃", "向前推手或点击按钮可吹灭蜡烛");
+            }
+
+            function schedule(fn, delay) {
+                const id = window.setTimeout(() => {
+                    scheduledTimers = scheduledTimers.filter(timerId => timerId !== id);
+                    fn();
+                }, delay);
+                scheduledTimers.push(id);
+                return id;
+            }
+
+            function clearScheduledTimers() {
+                scheduledTimers.forEach(id => window.clearTimeout(id));
+                scheduledTimers = [];
+                window.clearInterval(countdownTimer);
+                countdownTimer = 0;
+            }
+
+            function resize() {
+                viewW = window.innerWidth || 1;
+                viewH = window.innerHeight || 1;
+                dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+
+                canvas.width = Math.round(viewW * dpr);
+                canvas.height = Math.round(viewH * dpr);
+                canvas.style.width = `${viewW}px`;
+                canvas.style.height = `${viewH}px`;
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                sampleCanvas.width = viewW;
+                sampleCanvas.height = viewH;
+                initBackgroundStars();
+                rebuildCurrentShape();
+            }
+
+            function initBackgroundStars() {
+                const count = clamp(Math.round((viewW * viewH) / 14000), 54, 130);
+                backgroundStars = Array.from({ length: count }, () => ({
+                    x: Math.random() * viewW,
+                    y: Math.random() * viewH,
+                    size: Math.random() * 1.15 + 0.35,
+                    alpha: Math.random(),
+                    speed: Math.random() * 0.012 + 0.003,
+                    drift: (Math.random() - 0.5) * 0.08,
+                    layer: Math.random() * 0.8 + 0.2
+                }));
+            }
+
+            function getRotationValues(rotX, rotY) {
+                if (rotationCache.x !== rotX || rotationCache.y !== rotY) {
+                    rotationCache = {
+                        x: rotX,
+                        y: rotY,
+                        cosX: Math.cos(rotX),
+                        sinX: Math.sin(rotX),
+                        cosY: Math.cos(rotY),
+                        sinY: Math.sin(rotY)
+                    };
+                }
+                return rotationCache;
+            }
+
+            function globeYOffset() {
+                return -clamp(viewH * 0.1, 34, 88);
+            }
+
+            function rotatePoint(x, y, z, rotX, rotY) {
+                const rotation = getRotationValues(rotX, rotY);
+                const cosX = rotation.cosX;
+                const sinX = rotation.sinX;
+                const y1 = y * cosX - z * sinX;
+                const z1 = y * sinX + z * cosX;
+                const cosY = rotation.cosY;
+                const sinY = rotation.sinY;
+                return {
+                    x: x * cosY + z1 * sinY,
+                    y: y1,
+                    z: -x * sinY + z1 * cosY
+                };
+            }
+
+            // ═══════════════════════════════════════
+            // 3D投影与旋转（手写软渲染）
+            // ═══════════════════════════════════════
+            function projectPoint(x, y, z) {
+                const denominator = Math.max(160, FOV + CAMERA_DIST - z);
+                const scale = FOV / denominator;
+                return {
+                    x: viewW / 2 + x * scale * WORLD_SCALE,
+                    y: viewH / 2 + y * scale * WORLD_SCALE,
+                    scale
+                };
+            }
+
+            // ═══════════════════════════════════════
+            // 粒子系统
+            // ═══════════════════════════════════════
+            class QuantumParticle3D {
+                constructor(target, type = "normal", options = {}) {
+                    this.x = options.x ?? (Math.random() * viewW - viewW / 2);
+                    this.y = options.y ?? (Math.random() * viewH - viewH / 2);
+                    this.z = options.z ?? ((Math.random() - 0.5) * 430);
+                    this.tx = target.x;
+                    this.ty = target.y;
+                    this.tz = target.z;
+                    this.curX = viewW / 2;
+                    this.curY = viewH / 2;
+                    this.color = target.color;
+                    this.size = options.size ?? (Math.random() * 1.55 + 1.08);
+                    this.alpha = options.alpha ?? 0;
+                    this.ease = options.ease ?? 0.078;
+                    this.type = type;
+                    this.vx = options.vx ?? ((Math.random() - 0.5) * 11);
+                    this.vy = options.vy ?? ((Math.random() - 0.5) * 11);
+                    this.vz = options.vz ?? ((Math.random() - 0.5) * 11);
+                }
+
+                update(rotX, rotY) {
+                    if (currentState === STATE.BURST && this.type === "burst") {
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        this.z += this.vz;
+                        this.vx *= 0.987;
+                        this.vy = this.vy * 0.987 + 0.03;
+                        this.vz *= 0.987;
+                        this.alpha -= 0.016;
+                        const projected = projectPoint(this.x, this.y, this.z);
+                        this.curX = projected.x;
+                        this.curY = projected.y;
+                        return;
+                    }
+
+                    this.x += (this.tx - this.x) * this.ease;
+                    this.y += (this.ty - this.y) * this.ease;
+                    this.z += (this.tz - this.z) * this.ease;
+
+                    const fixedFacing = this.type === "text" || this.type === "title";
+                    const rotated = fixedFacing ? { x: this.x, y: this.y, z: this.z } : rotatePoint(this.x, this.y, this.z, rotX, rotY);
+                    const projected = projectPoint(rotated.x, rotated.y, rotated.z);
+                    const depthAlpha = clamp(0.3 + ((rotated.z + 300) / 600) * 0.55, 0.24, 0.88);
+
+                    this.curX = projected.x;
+                    this.curY = projected.y + (this.type === "nebula" ? globeYOffset() : 0);
+                    this.alpha += ((this.type === "nebula" ? depthAlpha * 0.82 : depthAlpha) - this.alpha) * 0.12;
+                    this.renderSize = this.size * clamp(projected.scale * (this.type === "nebula" ? 1.9 : 1.65), 0.9, 1.78);
+                }
+
+                draw() {
+                    if (this.alpha <= 0.01 || this.curX < -10 || this.curX > viewW + 10 || this.curY < -10 || this.curY > viewH + 10) {
+                        return;
+                    }
+
+                    ctx.globalAlpha = this.alpha;
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.curX, this.curY, this.renderSize || this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // ═══════════════════════════════════════
+            // 场景构建：文字/蛋糕/星球/烟花
+            // ═══════════════════════════════════════
+            function getExtrudedText3DPoints(text, size = 110, zDepth = 24, yOffset = 0, xOffset = 0) {
+                sampleCtx.setTransform(1, 0, 0, 1, 0, 0);
+                sampleCtx.clearRect(0, 0, viewW, viewH);
+                sampleCtx.fillStyle = "#fff";
+                sampleCtx.textAlign = "center";
+                sampleCtx.textBaseline = "middle";
+                sampleCtx.font = `800 ${size}px "Microsoft YaHei", "PingFang SC", sans-serif`;
+                sampleCtx.fillText(text, viewW / 2 + xOffset, viewH / 2 + yOffset);
+
+                const imgData = sampleCtx.getImageData(0, 0, viewW, viewH);
+                const points = [];
+                const step = clamp(Math.round(Math.min(viewW, viewH) / 130), 4, 6);
+                const scale = clamp(Math.min(viewW / 560, viewH / 500), 0.95, 1.45);
+
+                for (let y = 0; y < viewH; y += step) {
+                    for (let x = 0; x < viewW; x += step) {
+                        if (imgData.data[(y * viewW + x) * 4 + 3] > 150) {
+                            const cx = (x - viewW / 2) * scale;
+                            const cy = (y - viewH / 2) * scale;
+                            for (let z = -zDepth / 2; z <= zDepth / 2; z += 10) {
+                                points.push({
+                                    x: cx,
+                                    y: cy,
+                                    z,
+                                    color: `hsl(${190 + Math.random() * 28}, 100%, ${60 + Math.random() * 12}%)`
+                                });
+                            }
+                        }
+                    }
+                }
+
+                sampleCtx.clearRect(0, 0, viewW, viewH);
+                return points;
+            }
+
+            function getCake3DPoints() {
+                const points = [];
+                const s = clamp(Math.min(viewW / 620, viewH / 560), 0.9, 1.34);
+                const centerY = 68;
+
+                function addCylinder(yStart, yEnd, radius, innerRadius, stepH, stepR, hueA, hueB) {
+                    for (let h = yStart; h < yEnd; h += stepH) {
+                        for (let r = 0; r <= radius; r += stepR) {
+                            if (r < innerRadius && h > yStart + stepH && h < yEnd - stepH) continue;
+                            const angleStep = Math.max(0.09, 1.35 / Math.max(r, 1));
+                            for (let a = 0; a < Math.PI * 2; a += angleStep) {
+                                const mix = Math.random();
+                                points.push({
+                                    x: Math.cos(a) * r * s,
+                                    y: (centerY - h) * s,
+                                    z: Math.sin(a) * r * s,
+                                    color: mix > 0.22 ? hueA : hueB
+                                });
+                            }
+                        }
+                    }
+                }
+
+                addCylinder(0, 56, 148, 118, 5.6, 10, "#006dff", "#d8f5ff");
+                addCylinder(56, 101, 104, 78, 5.4, 9, "#02b7ff", "#ffffff");
+                addCylinder(101, 136, 68, 48, 5, 8, "#21ffff", "#ffffff");
+
+                for (let h = 136; h < 176; h += 4.6) {
+                    for (let r = 0; r <= 5.5; r += 2.4) {
+                        for (let a = 0; a < Math.PI * 2; a += 0.58) {
+                            points.push({
+                                x: Math.cos(a) * r * s,
+                                y: (centerY - h) * s,
+                                z: Math.sin(a) * r * s,
+                                color: h > 165 ? "#bfffff" : "#ffffff"
+                            });
+                        }
+                    }
+                }
+
+                return points;
+            }
+
+            function currentSphereRadius() {
+                const wideSphere = Math.min(viewW * 0.74, viewH * 0.54);
+                return clamp(wideSphere, 240, 540);
+            }
+
+            function getNebulaSpherePoints(count = 1850) {
+                const points = [];
+                const baseRadius = currentSphereRadius();
+
+                for (let i = 0; i < count; i++) {
+                    const phi = Math.acos(-1 + (2 * i) / count);
+                    const theta = Math.sqrt(count * Math.PI) * phi;
+                    const layer = Math.random();
+                    const radius = layer > 0.72
+                        ? baseRadius + Math.random() * baseRadius * 0.22
+                        : layer > 0.36
+                            ? baseRadius * (0.72 + Math.random() * 0.18)
+                            : baseRadius * (0.34 + Math.random() * 0.3);
+                    points.push({
+                        x: radius * Math.sin(phi) * Math.cos(theta),
+                        y: radius * Math.sin(phi) * Math.sin(theta),
+                        z: radius * Math.cos(phi),
+                        color: layer > 0.72
+                            ? `hsl(${185 + Math.random() * 18}, 100%, ${74 + Math.random() * 14}%)`
+                            : layer > 0.36
+                                ? `hsl(${220 + Math.random() * 34}, 100%, ${52 + Math.random() * 16}%)`
+                                : `hsl(${165 + Math.random() * 24}, 100%, ${48 + Math.random() * 18}%)`
+                    });
+                }
+
+                return points;
+            }
+
+            function setParticlesFromPoints(points, type, maxCount, options = {}) {
+                const previous = options.fromExisting ? particles.slice() : [];
+                particles = [];
+                const stride = Math.max(1, Math.ceil(points.length / maxCount));
+                let sourceIndex = 0;
+                for (let i = 0; i < points.length; i += stride) {
+                    const source = previous.length ? previous[sourceIndex++ % previous.length] : null;
+                    particles.push(new QuantumParticle3D(points[i], type, source ? {
+                        x: source.x,
+                        y: source.y,
+                        z: source.z,
+                        alpha: Math.min(0.75, source.alpha || 0.2),
+                        ease: 0.045
+                    } : {}));
+                }
+            }
+
+            function appendParticlesFromPoints(points, type, maxCount) {
+                const stride = Math.max(1, Math.ceil(points.length / maxCount));
+                for (let i = 0; i < points.length; i += stride) {
+                    particles.push(new QuantumParticle3D(points[i], type));
+                }
+            }
+
+            function morphTo3DCount(num) {
+                const size = clamp(Math.min(viewW * 0.55, viewH * 0.56), 132, 230);
+                setParticlesFromPoints(getExtrudedText3DPoints(String(num), size, 34), "text", 3000);
+            }
+
+            function buildGreetingPoints(size, y, depth) {
+                const line1 = greetingLine1 || "生日快乐";
+                const line2 = greetingLine2 || "祝你开心";
+                const totalChars = line1.length + line2.length;
+                if (totalChars <= 8) {
+                    const phraseGap = clamp(size * 2.65, 98, 240);
+                    return getExtrudedText3DPoints(line1, size, depth, y, -phraseGap)
+                        .concat(getExtrudedText3DPoints(line2, size, depth, y, phraseGap));
+                }
+
+                const compactSize = clamp(size * Math.min(1, 9 / Math.max(totalChars, 9)), 30, size);
+                const lineGap = clamp(compactSize * 1.45, 48, 88);
+                return getExtrudedText3DPoints(line1, compactSize, depth, y - lineGap / 2, 0)
+                    .concat(getExtrudedText3DPoints(line2, compactSize, depth, y + lineGap / 2, 0));
+            }
+
+            function showBirthdayText() {
+                const titleSize = clamp(viewW / 8.4, 44, 86);
+                const lineY = -clamp(viewH * 0.05, 28, 54);
+                setParticlesFromPoints(buildGreetingPoints(titleSize, lineY, 20), "text", 4400);
+            }
+
+            function showCake() {
+                const wasCake = currentState === STATE.CAKE;
+                currentState = STATE.CAKE;
+                if (!wasCake) cakeEntryCount += 1;
+                const useCandleIntro = cakeEntryCount === 1;
+                window.clearTimeout(blowPromptTimer);
+                window.clearTimeout(cakeAutoTimer);
+                candleLit = useCandleIntro;
+                candleSmoke = [];
+                candleSparks = [];
+                candleShockwaveStarted = 0;
+                cakeAutoEntering = false;
+                cakeReadyAt = useCandleIntro ? performance.now() + 900 : 0;
+                openFrames = 0;
+                blowCandleButton.textContent = "吹灭蜡烛";
+                closePhotoManager();
+                hideFloatingPhotoCaption();
+                blowCandleButton.style.display = "none";
+                particles = [];
+                appendParticlesFromPoints(getCake3DPoints(), "cake", 3900);
+                const titleSize = clamp(viewW / 9.2, 38, 70);
+                const titleY = -clamp(viewH * 0.26, 126, 196);
+                appendParticlesFromPoints(buildGreetingPoints(titleSize, titleY, 18), "title", 2400);
+                uiLayer.style.opacity = "1";
+                uiLayer.style.transform = "translateX(-50%)";
+                if (useCandleIntro) {
+                    setStatus("张开手掌吹灭蜡烛", "吹灭后会自动进入照片星球");
+                } else {
+                    setStatus("3D生日蛋糕已凝聚", "张开手掌可再次展开照片星球");
+                }
+            }
+
+            function showGlobe() {
+                currentState = STATE.GLOBE;
+                blowCandleButton.style.display = "none";
+                setParticlesFromPoints(getNebulaSpherePoints(), "nebula", Math.round(1850 * qualityScale), { fromExisting: true });
+                transitionUntil = performance.now() + 1500;
+                updateShapeLabel();
+                setStatus("星系照片已展开", "比耶或点切换形态；抓住照片会显示已编辑文字");
+            }
+
+            function switchPhotoShape(direction = 1) {
+                if (currentState !== STATE.GLOBE) return;
+                currentShapeIndex = (currentShapeIndex + direction + PHOTO_SHAPES.length) % PHOTO_SHAPES.length;
+                shapeTransitionUntil = performance.now() + 850;
+                if (currentShape().id === "timeline") timelineAutoOffset = 0;
+                updateShapeLabel();
+                saveConfig();
+                playTone("shape");
+                setStatus(`已切换：${currentShape().label}`, currentShape().id === "timeline" ? "照片会按时间自动滚动播放" : "照片会按新形态重新排列");
+            }
+
+            function rebuildCurrentShape() {
+                if (currentState === STATE.COUNTDOWN) {
+                    morphTo3DCount(countdownNum);
+                } else if (currentState === STATE.CAKE) {
+                    showCake();
+                } else if (currentState === STATE.GLOBE) {
+                    setParticlesFromPoints(getNebulaSpherePoints(), "nebula", Math.round(1850 * qualityScale));
+                }
+            }
+
+            function startCountdownSequence() {
+                if (currentState !== STATE.IDLE) return;
+                clearScheduledTimers();
+                currentState = STATE.COUNTDOWN;
+                countdownNum = 3;
+                uiLayer.style.opacity = "1";
+                uiLayer.style.transform = "translateX(-50%)";
+                setStatus("量子粒子通道同步中", "倒计时开始");
+                morphTo3DCount(countdownNum);
+                playTone("tap");
+
+                countdownTimer = window.setInterval(() => {
+                    countdownNum -= 1;
+                    if (countdownNum > 0) {
+                        morphTo3DCount(countdownNum);
+                    } else {
+                        window.clearInterval(countdownTimer);
+                        countdownTimer = 0;
+                        triggerSuperNovaBurst();
+                    }
+                }, 1450);
+            }
+
+            function spawnBurstWave(multiplier = 1, origin = { x: 0, y: 0, z: 0 }) {
+                const colors = ["#67f7ff", "#00bcff", "#ffffff", "#61a8ff", "#b6fff8", "#fff6d6"];
+                for (let i = 0; i < 165 * multiplier; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const lift = (Math.random() - 0.5) * Math.PI;
+                    const speed = 5 + Math.random() * 12;
+                    particles.push(new QuantumParticle3D({ x: 0, y: 0, z: 0, color: colors[(Math.random() * colors.length) | 0] }, "burst", {
+                        x: origin.x + (Math.random() - 0.5) * 44,
+                        y: origin.y + (Math.random() - 0.5) * 44,
+                        z: origin.z + (Math.random() - 0.5) * 36,
+                        vx: Math.cos(angle) * Math.cos(lift) * speed,
+                        vy: Math.sin(lift) * speed,
+                        vz: Math.sin(angle) * Math.cos(lift) * speed,
+                        alpha: 0.98,
+                        size: Math.random() * 1.95 + 1.05
+                    }));
+                }
+            }
+
+            function triggerSuperNovaBurst() {
+                currentState = STATE.BURST;
+                particles = [];
+                grabbedIndex = -1;
+                blowCandleButton.style.display = "none";
+                uiLayer.style.opacity = "0";
+                uiLayer.style.transform = "translateX(-50%) translateY(-8px)";
+                playTone("burst");
+
+                spawnBurstWave(1.2, { x: 0, y: 0, z: 0 });
+                schedule(() => spawnBurstWave(0.9, { x: -130, y: -70, z: 40 }), 170);
+                schedule(() => spawnBurstWave(0.9, { x: 130, y: -55, z: -20 }), 340);
+                schedule(() => spawnBurstWave(0.7, { x: -70, y: 90, z: 70 }), 540);
+                schedule(() => spawnBurstWave(0.7, { x: 90, y: 80, z: -60 }), 740);
+                schedule(showBirthdayText, 1350);
+                schedule(showCake, 5600);
+            }
+
+            function updatePointer(clientX, clientY, pinch, mode) {
+                inputMode = mode;
+                lastInputAt = performance.now();
+                const wasPinching = isPinching;
+                const releasedIndex = grabbedIndex;
+                handX = lerp(handX, clamp(clientX / viewW, 0, 1), 0.32);
+                handY = lerp(handY, clamp(clientY / viewH, 0, 1), 0.32);
+                isPinching = pinch;
+                if (!isPinching) {
+                    grabPalmBase = 0;
+                    grabbedScale = 1;
+                    pointerGrabScale = 1;
+                    grabStartedAt = 0;
+                }
+                pointer.style.left = `${handX * viewW}px`;
+                pointer.style.top = `${handY * viewH}px`;
+                pointer.classList.toggle("is-pinching", isPinching);
+                pointer.style.transform = isPinching ? "translate(-50%, -50%) scale(0.82)" : "translate(-50%, -50%) scale(1)";
+            }
+
+            function resetInputPoint() {
+                isPinching = false;
+                grabbedIndex = -1;
+                grabPalmBase = 0;
+                grabbedScale = 1;
+                pointerGrabScale = 1;
+                pointer.classList.remove("is-pinching");
+                pointer.style.transform = "translate(-50%, -50%) scale(0)";
+                hideFloatingPhotoCaption();
+            }
+
+            // ═══════════════════════════════════════
+            // 手势识别与状态转换
+            // ═══════════════════════════════════════
+            function handleGesture(openFingers, fingerOpen, palmSize) {
+                const now = performance.now();
+                openFrames = openFingers >= 4 ? openFrames + 1 : 0;
+                closedFrames = openFingers <= 1 && !isPinching ? closedFrames + 1 : 0;
+                const peaceGesture = fingerOpen.index && fingerOpen.middle && !fingerOpen.ring && !fingerOpen.pinky;
+                peaceFrames = peaceGesture ? peaceFrames + 1 : 0;
+
+                if (currentState === STATE.IDLE) {
+                    if (openFrames >= 6) {
+                        openFrames = 0;
+                        startCountdownSequence();
+                    }
+                    return;
+                } else if (currentState === STATE.GLOBE && peaceFrames >= 10 && now > shapeGestureLockUntil && !isPinching) {
+                    peaceFrames = 0;
+                    shapeGestureLockUntil = now + 1200;
+                    switchPhotoShape(1);
+                } else if (currentState === STATE.CAKE && openFrames >= 3) {
+                    if (now < gestureLockUntil) return;
+                    if (cakeEntryCount === 1 && candleLit && now < cakeReadyAt) return;
+                    if (cakeEntryCount === 1 && candleLit) {
+                        blowOutCandle();
+                        previousPalmSize = palmSize;
+                        return;
+                    }
+                    if (cakeAutoEntering) return;
+                    openFrames = 0;
+                    showGlobe();
+                } else if (currentState === STATE.GLOBE && closedFrames >= 4) {
+                    closedFrames = 0;
+                    grabbedIndex = -1;
+                    showCake();
+                }
+            }
+
+            function clampCardCenter(x, y, scale, card) {
+                const margin = 12;
+                const width = card.offsetWidth * scale;
+                const height = card.offsetHeight * scale;
+                return {
+                    x: clamp(x, margin + width / 2, viewW - margin - width / 2),
+                    y: clamp(y, margin + height / 2, viewH - margin - height / 2)
+                };
+            }
+
+            function getPhotoSlot(i, total, radius, rotX, rotY, now = performance.now()) {
+                const point = getPhotoShapePoint(i, total, radius, now);
+                const x = point.x;
+                const y = point.y;
+                const z = point.z;
+                const rotated = rotatePoint(x, y, z, rotX, rotY);
+                const projected = projectPoint(rotated.x, rotated.y, rotated.z);
+                projected.y += globeYOffset();
+                return { rotated, projected };
+            }
+
+            function timelineRank(index) {
+                const sorted = photoCards
+                    .map((card, i) => ({ i, time: (card.dataset.time || "").trim(), content: (card.dataset.content || "").trim() }))
+                    .sort((a, b) => {
+                        if (a.time && b.time && a.time !== b.time) return a.time.localeCompare(b.time, "zh-CN", { numeric: true });
+                        if (a.time && !b.time) return -1;
+                        if (!a.time && b.time) return 1;
+                        return a.i - b.i;
+                    });
+                const found = sorted.findIndex(item => item.i === index);
+                return found === -1 ? index : found;
+            }
+
+            function getPhotoShapePoint(i, total, radius, now) {
+                const shapeId = currentShape().id;
+                const t = total <= 1 ? 0.5 : i / (total - 1);
+                const phase = now * 0.00045 + i * 0.37;
+
+                if (shapeId === "heart") {
+                    const a = Math.PI * 2 * t;
+                    const heartScale = radius * 0.065;
+                    return {
+                        x: 16 * Math.pow(Math.sin(a), 3) * heartScale,
+                        y: -(13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * heartScale * 0.9,
+                        z: Math.sin(a * 2 + now * 0.001) * radius * 0.16
+                    };
+                }
+
+                if (shapeId === "timeline") {
+                    const rank = timelineRank(i);
+                    const tt = total <= 1 ? 0.5 : ((rank / total + timelineAutoOffset) % 1);
+                    return {
+                        x: (tt - 0.5) * Math.min(viewW * 0.68, radius * 2.2),
+                        y: Math.sin(tt * Math.PI * 2) * radius * 0.12,
+                        z: (0.5 - Math.abs(tt - 0.5)) * radius * 0.34
+                    };
+                }
+
+                if (shapeId === "wall") {
+                    const cols = Math.ceil(Math.sqrt(total * 1.45));
+                    const rows = Math.ceil(total / cols);
+                    const col = i % cols;
+                    const row = Math.floor(i / cols);
+                    const gapX = Math.min(118, viewW * 0.72 / Math.max(1, cols - 1));
+                    const gapY = Math.min(132, viewH * 0.48 / Math.max(1, rows - 1));
+                    return {
+                        x: (col - (cols - 1) / 2) * gapX,
+                        y: (row - (rows - 1) / 2) * gapY,
+                        z: Math.sin(phase) * radius * 0.08
+                    };
+                }
+
+                const phi = Math.acos(-1 + (2 * i) / total);
+                const theta = Math.sqrt(total * Math.PI) * phi;
+                return {
+                    x: radius * Math.sin(phi) * Math.cos(theta),
+                    y: radius * Math.sin(phi) * Math.sin(theta),
+                    z: radius * Math.cos(phi)
+                };
+            }
+
+            function update3DPhotoGlobe(now) {
+                if (currentState !== STATE.GLOBE) {
+                    if (photoContainer.style.display !== "none") photoContainer.style.display = "none";
+                    if (photoManagerPanel.classList.contains("is-open")) closePhotoManager();
+                    hideFloatingPhotoCaption();
+                    return;
+                }
+
+                if (photoContainer.style.display !== "block") photoContainer.style.display = "block";
+                const radius = currentSphereRadius();
+                if (currentShape().id === "timeline" && !isPinching) {
+                    timelineAutoOffset = (timelineAutoOffset + 0.00016 * Math.max(1, photoCards.length / 10)) % 1;
+                }
+                targetAngleY = (handX - 0.5) * Math.PI * 1.82;
+                targetAngleX = (handY - 0.5) * Math.PI * 1.06;
+                angleY += (targetAngleY - angleY) * 0.09;
+                angleX += (targetAngleX - angleX) * 0.09;
+
+                const rotY = angleY + now * 0.00022;
+                const rotX = angleX;
+
+                if (isPinching && grabbedIndex === -1) {
+                    let closestIdx = -1;
+                    let bestScore = Infinity;
+                    photoCards.forEach((card, i) => {
+                        const slot = getPhotoSlot(i, photoCards.length, radius, rotX, rotY);
+                        const depth = clamp((slot.rotated.z + radius) / (radius * 2), 0, 1);
+                        if (depth < 0.18) return;
+                        const d = Math.hypot(slot.projected.x - handX * viewW, slot.projected.y - handY * viewH);
+                        const featuredBoost = card.dataset.featured === "true" ? 1.45 : 1;
+                        const hitRadius = Math.max(118, card.offsetWidth * 2.55) * (0.72 + depth * 0.42) * featuredBoost;
+                        const score = d - depth * (card.dataset.featured === "true" ? 88 : 54);
+                        if (d < hitRadius && score < bestScore) {
+                            bestScore = score;
+                            closestIdx = i;
+                        }
+                    });
+
+                    if (closestIdx === -1) {
+                        let fallbackScore = Infinity;
+                        photoCards.forEach((card, i) => {
+                            const slot = getPhotoSlot(i, photoCards.length, radius, rotX, rotY);
+                            const depth = clamp((slot.rotated.z + radius) / (radius * 2), 0, 1);
+                            if (depth < 0.32) return;
+                            const d = Math.hypot(slot.projected.x - handX * viewW, slot.projected.y - handY * viewH);
+                            const score = d - depth * 92;
+                            if (d < Math.max(170, card.offsetWidth * 3.2) && score < fallbackScore) {
+                                fallbackScore = score;
+                                closestIdx = i;
+                            }
+                        });
+                    }
+
+                    grabbedIndex = closestIdx;
+                    if (grabbedIndex !== -1) {
+                        grabPalmBase = Math.max(0.035, currentPalmSize);
+                        grabbedScale = 1;
+                        grabStartedAt = performance.now();
+                        playTone("grab");
+                    }
+                }
+
+                photoCards.forEach((card, i) => {
+                    if (isPinching && i === grabbedIndex) {
+                        card.classList.add("is-grabbed");
+                        renderPhotoCaption(card);
+                        const targetDepthScale = inputMode === "camera"
+                            ? clamp(currentPalmSize / Math.max(0.035, grabPalmBase || currentPalmSize), 0.58, 1.85)
+                            : pointerGrabScale;
+                        grabbedScale += (targetDepthScale - grabbedScale) * 0.18;
+                        const baseScale = clamp(Math.min(viewW / 430, viewH / 620), 0.92, 1.18);
+                        const scale = clamp(baseScale * grabbedScale, 0.56, 2.15);
+                        const safe = clampCardCenter(handX * viewW, handY * viewH, scale, card);
+                        const x = safe.x - viewW / 2;
+                        const y = safe.y - viewH / 2;
+                        showFloatingPhotoCaption(card, safe.x, safe.y, card.offsetHeight * scale);
+                        card.style.opacity = "1";
+                        card.style.zIndex = "4000";
+                        card.style.transform = `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0) scale(${scale}) rotate(0deg)`;
+                        return;
+                    }
+
+                    card.classList.remove("is-grabbed");
+                    const slot = getPhotoSlot(i, photoCards.length, radius, rotX, rotY);
+                    const depth = clamp((slot.rotated.z + radius) / (radius * 2), 0, 1);
+                    const featuredScale = card.dataset.featured === "true" ? 1.25 : 1;
+                    const wallBoost = currentShape().id === "wall" ? 1.22 : currentShape().id === "timeline" ? 1.08 : 1;
+                    const intro = shapeTransitionUntil > now ? 0.72 + (1 - (shapeTransitionUntil - now) / 850) * 0.28 : 1;
+                    const scale = clamp(slot.projected.scale * 1.35 * featuredScale * wallBoost * intro, 0.34, 0.94);
+                    const tilt = (i % 2 === 0 ? -1 : 1) * (3 + depth * 4);
+                    const x = slot.projected.x - viewW / 2;
+                    const y = slot.projected.y - viewH / 2;
+
+                    card.style.opacity = String(clamp((0.22 + depth * 0.76 + (card.dataset.featured === "true" ? 0.12 : 0)) * intro, 0.2, 1));
+                    card.style.zIndex = String(Math.round(1000 + depth * 900 + (card.dataset.featured === "true" ? 80 : 0)));
+                    card.style.transform = `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0) scale(${scale}) rotate(${tilt}deg)`;
+                });
+
+                if (!isPinching) {
+                    grabbedIndex = -1;
+                    hideFloatingPhotoCaption();
+                }
+            }
+
+            function onHandResults(results) {
+                if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+                    if (inputMode === "camera") resetInputPoint();
+                    openFrames = 0;
+                    closedFrames = 0;
+                    return;
+                }
+
+                const landmarks = results.multiHandLandmarks[0];
+                const rawX = 1 - landmarks[9].x;
+                const rawY = landmarks[9].y;
+                const wrist = landmarks[0];
+                const palmSize = Math.max(0.035, distance3D(wrist, landmarks[9]));
+                currentPalmSize = palmSize;
+                const thumb = landmarks[4];
+                const index = landmarks[8];
+                const pinchDist = distance3D(thumb, index) / palmSize;
+                const pinching = pinchDist < 0.36;
+
+                const fingerOpen = {
+                    index: distance3D(wrist, landmarks[8]) > distance3D(wrist, landmarks[6]) * 1.08,
+                    middle: distance3D(wrist, landmarks[12]) > distance3D(wrist, landmarks[10]) * 1.08,
+                    ring: distance3D(wrist, landmarks[16]) > distance3D(wrist, landmarks[14]) * 1.08,
+                    pinky: distance3D(wrist, landmarks[20]) > distance3D(wrist, landmarks[18]) * 1.08,
+                    thumb: distance3D(wrist, landmarks[4]) > distance3D(wrist, landmarks[2]) * 1.08
+                };
+                let openFingers = 0;
+                Object.keys(fingerOpen).forEach(key => {
+                    if (fingerOpen[key]) openFingers += 1;
+                });
+
+                updatePointer(rawX * viewW, rawY * viewH, pinching, "camera");
+                handleGesture(openFingers, fingerOpen, palmSize);
+                previousPalmSize = palmSize;
+            }
+
+            async function startCameraTracking() {
+                if (!window.Hands || !window.Camera) {
+                    loadingIndicator.classList.add("is-hidden");
+                    setStatus("点击画面开始", "手势组件未加载，已切换为鼠标控制");
+                    return;
+                }
+                // 非 HTTPS / 非 localhost 环境下浏览器没有 mediaDevices，直接走鼠标模式，避免报错
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    loadingIndicator.classList.add("is-hidden");
+                    setStatus("点击画面开始", "当前环境不支持摄像头（需 HTTPS 或 localhost），已切换为鼠标控制");
+                    return;
+                }
+
+                try {
+                    const hands = new Hands({
+                        locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+                    });
+
+                    hands.setOptions({
+                        maxNumHands: 1,
+                        modelComplexity: 1,
+                        minDetectionConfidence: 0.68,
+                        minTrackingConfidence: 0.68
+                    });
+
+                    hands.onResults(onHandResults);
+
+                    const camera = new Camera(video, {
+                        onFrame: async () => {
+                            if (frameBusy) return;
+                            const now = performance.now();
+                            const minInterval = qualityScale < 0.75 ? 95 : qualityScale < 0.9 ? 68 : 46;
+                            if (now - lastGestureSentAt < minInterval) return;
+                            lastGestureSentAt = now;
+                            frameBusy = true;
+                            try {
+                                await hands.send({ image: video });
+                            } finally {
+                                frameBusy = false;
+                            }
+                        },
+                        width: 640,
+                        height: 480
+                    });
+
+                    await camera.start();
+                    loadingIndicator.classList.add("is-hidden");
+                    setStatus("张开手掌开始", "保持张开片刻，或点击画面使用鼠标控制");
+                } catch (error) {
+                    loadingIndicator.classList.add("is-hidden");
+                    setStatus("点击画面开始", "摄像头不可用，已切换为鼠标控制");
+                }
+            }
+
+            function attachPointerFallback() {
+                window.addEventListener("pointermove", event => {
+                    if (event.pointerType === "touch" && event.buttons === 0) return;
+                    updatePointer(event.clientX, event.clientY, event.buttons === 1, "pointer");
+                    if (currentState === STATE.CAKE && cakeEntryCount === 1 && event.buttons === 1 && candleLit && performance.now() >= cakeReadyAt) blowOutCandle();
+                }, { passive: true });
+
+                window.addEventListener("pointerdown", event => {
+                    updatePointer(event.clientX, event.clientY, true, "pointer");
+                    if (currentState === STATE.IDLE) startCountdownSequence();
+                    if (currentState === STATE.CAKE && cakeEntryCount === 1 && candleLit && performance.now() >= cakeReadyAt) blowOutCandle();
+                }, { passive: true });
+
+                window.addEventListener("pointerup", event => {
+                    updatePointer(event.clientX, event.clientY, false, "pointer");
+                }, { passive: true });
+
+                window.addEventListener("wheel", event => {
+                    if (currentState !== STATE.GLOBE || inputMode !== "pointer" || !isPinching || grabbedIndex === -1) {
+                        return;
+                    }
+                    event.preventDefault();
+                    pointerGrabScale = clamp(pointerGrabScale + (event.deltaY < 0 ? 0.13 : -0.13), 0.55, 1.95);
+                }, { passive: false });
+
+                window.addEventListener("keydown", event => {
+                    if (event.key === " " || event.key === "Enter") {
+                        if (currentState === STATE.IDLE) startCountdownSequence();
+                    } else if (event.key.toLowerCase() === "g" && currentState === STATE.CAKE) {
+                        showGlobe();
+                    } else if (event.key.toLowerCase() === "c" && currentState === STATE.GLOBE) {
+                        showCake();
+                    } else if (event.key.toLowerCase() === "s" && currentState === STATE.GLOBE) {
+                        switchPhotoShape(1);
+                    }
+                });
+            }
+
+            function attachPhotoInput() {
+                photoTools.addEventListener("pointerdown", event => {
+                    event.stopPropagation();
+                });
+
+                photoManagerPanel.addEventListener("pointerdown", event => {
+                    event.stopPropagation();
+                });
+
+                photoManagerButton.addEventListener("click", event => {
+                    event.stopPropagation();
+                    openPhotoManager();
+                });
+
+                managerAddPhotoButton.addEventListener("click", event => {
+                    event.stopPropagation();
+                    photoInput.click();
+                });
+
+                managerImportButton.addEventListener("click", event => {
+                    event.stopPropagation();
+                    configInput.click();
+                });
+
+                managerExportButton.addEventListener("click", event => {
+                    event.stopPropagation();
+                    exportConfig();
+                });
+
+                managerCloseButton.addEventListener("click", event => {
+                    event.stopPropagation();
+                    closePhotoManager();
+                });
+
+                photoInput.addEventListener("change", () => {
+                    addPhotoFiles(photoInput.files || []);
+                    photoInput.value = "";
+                });
+
+                configInput.addEventListener("change", async () => {
+                    const file = configInput.files?.[0];
+                    configInput.value = "";
+                    if (!file) return;
+                    try {
+                        const data = JSON.parse(await file.text());
+                        applyImportedConfig(data);
+                    } catch (error) {
+                        setStatus("配置导入失败", "请选择之前导出的 JSON 配置文件");
+                    }
+                });
+
+                window.addEventListener("dragover", event => {
+                    if (currentState === STATE.GLOBE) event.preventDefault();
+                });
+
+                window.addEventListener("drop", event => {
+                    if (currentState !== STATE.GLOBE) return;
+                    event.preventDefault();
+                    addPhotoFiles(event.dataTransfer?.files || []);
+                });
+
+                photoContainer.addEventListener("dblclick", event => {
+                    const card = event.target.closest(".photo-card");
+                    if (!card) return;
+                    event.stopPropagation();
+                    editPhotoCaption(Number(card.dataset.index || 0));
+                });
+
+                updatePhotoCount();
+                buildPhotoManagerList();
+            }
+
+            function attachControlPanel() {
+                settingsToggle.addEventListener("click", event => {
+                    event.stopPropagation();
+                    ensureAudio();
+                    settingsPanel.classList.toggle("is-open");
+                    playTone("tap");
+                });
+
+                applySettings.addEventListener("click", event => {
+                    event.stopPropagation();
+                    applyGreetingSettings();
+                    settingsPanel.classList.remove("is-open");
+                });
+
+                soundToggle.addEventListener("change", () => {
+                    soundEnabled = soundToggle.checked;
+                    if (soundEnabled) playTone("tap");
+                    saveConfig();
+                });
+
+                shapeToggle.addEventListener("click", event => {
+                    event.stopPropagation();
+                    switchPhotoShape(1);
+                });
+
+                posterButton.addEventListener("click", event => {
+                    event.stopPropagation();
+                    openPosterPanel();
+                });
+
+                posterPanel.addEventListener("pointerdown", event => {
+                    event.stopPropagation();
+                });
+
+                [posterTemplate, posterBackground, posterStyle, posterQuality, posterTitleInput].forEach(control => {
+                    control.addEventListener("change", refreshPosterPreview);
+                    control.addEventListener("input", refreshPosterPreview);
+                });
+
+                posterBgButton.addEventListener("click", event => {
+                    event.stopPropagation();
+                    posterBgInput.click();
+                });
+
+                posterBgInput.addEventListener("change", () => {
+                    const file = posterBgInput.files?.[0];
+                    posterBgInput.value = "";
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        posterCustomBackground = String(reader.result || "");
+                        posterBackground.value = "custom";
+                        refreshPosterPreview();
+                    };
+                    reader.readAsDataURL(file);
+                });
+
+                posterRenderButton.addEventListener("click", event => {
+                    event.stopPropagation();
+                    refreshPosterPreview();
+                });
+
+                posterDownloadButton.addEventListener("click", event => {
+                    event.stopPropagation();
+                    downloadPoster();
+                });
+
+                posterCloseButton.addEventListener("click", event => {
+                    event.stopPropagation();
+                    posterPanel.classList.remove("is-open");
+                    posterPanel.setAttribute("aria-hidden", "true");
+                });
+
+                demoToggle.addEventListener("click", event => {
+                    event.stopPropagation();
+                    demoMode = !demoMode;
+                    document.body.classList.toggle("demo-mode", demoMode);
+                    demoToggle.textContent = demoMode ? "退出演示" : "演示";
+                    if (demoMode) {
+                        closePhotoManager();
+                        settingsPanel.classList.remove("is-open");
+                        document.documentElement.requestFullscreen?.().catch(() => {});
+                    } else if (document.fullscreenElement) {
+                        document.exitFullscreen?.().catch(() => {});
+                    }
+                    saveConfig();
+                    playTone("tap");
+                });
+
+                blowCandleButton.addEventListener("click", event => {
+                    event.stopPropagation();
+                    ensureAudio();
+                    if (cakeEntryCount !== 1) return;
+                    if (candleLit) blowOutCandle();
+                    else relightCandle();
+                });
+
+                window.addEventListener("keydown", event => {
+                    if (event.key === "Escape") {
+                        settingsPanel.classList.remove("is-open");
+                        closePhotoManager();
+                        posterPanel.classList.remove("is-open");
+                        posterPanel.setAttribute("aria-hidden", "true");
+                    }
+                });
+            }
+
+            function drawBackground() {
+                ctx.globalCompositeOperation = "source-over";
+                ctx.globalAlpha = 1;
+                ctx.fillStyle = "rgba(2, 3, 8, 0.25)";
+                ctx.fillRect(0, 0, viewW, viewH);
+
+                backgroundStars.forEach(star => {
+                    star.alpha += star.speed;
+                    if (star.alpha > 1 || star.alpha < 0) star.speed = -star.speed;
+                    star.x += star.drift * star.layer;
+                    star.y += 0.02 * star.layer;
+                    if (star.x < -4) star.x = viewW + 4;
+                    if (star.x > viewW + 4) star.x = -4;
+                    if (star.y > viewH + 4) star.y = -4;
+                    ctx.globalAlpha = Math.max(0, star.alpha * (0.24 + star.layer * 0.24));
+                    ctx.fillStyle = "#ffffff";
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.size * (0.75 + star.layer * 0.6), 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.globalAlpha = 1;
+            }
+
+            function drawBlessingOrbit(now) {
+                if (currentState !== STATE.GLOBE) return;
+                const messages = getBlessingMessages();
+                if (!messages.length) return;
+
+                const cx = viewW / 2;
+                const cy = viewH / 2 + globeYOffset();
+                const radiusX = clamp(viewW * 0.3, 150, 420);
+                const radiusY = clamp(viewH * 0.19, 82, 210);
+                ctx.save();
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.font = `800 ${clamp(viewW / 54, 14, 22)}px "Microsoft YaHei", "PingFang SC", sans-serif`;
+                ctx.shadowBlur = 16;
+                ctx.shadowColor = "rgba(112, 248, 255, 0.82)";
+                messages.forEach((message, index) => {
+                    const angle = now * 0.00028 + index * Math.PI * 2 / messages.length;
+                    const z = Math.sin(angle);
+                    const x = cx + Math.cos(angle) * radiusX;
+                    const y = cy + Math.sin(angle) * radiusY * 0.38 - 12;
+                    const alpha = clamp(0.28 + (z + 1) * 0.32, 0.24, 0.92);
+                    const scale = clamp(0.78 + (z + 1) * 0.14, 0.72, 1.08);
+                    ctx.globalAlpha = alpha;
+                    ctx.fillStyle = z > 0 ? "rgba(218, 255, 255, 0.96)" : "rgba(120, 238, 255, 0.54)";
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.scale(scale, scale);
+                    ctx.fillText(message, 0, 0);
+                    ctx.restore();
+                });
+                ctx.restore();
+                ctx.globalAlpha = 1;
+            }
+
+            function drawCakeStageGlow(now) {
+                if (currentState !== STATE.CAKE) return;
+                const cx = viewW / 2;
+                const cy = viewH / 2 + clamp(viewH * 0.18, 82, 150);
+                const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, clamp(viewW * 0.36, 140, 360));
+                glow.addColorStop(0, "rgba(72, 219, 255, 0.2)");
+                glow.addColorStop(0.42, "rgba(45, 80, 255, 0.11)");
+                glow.addColorStop(1, "rgba(0, 0, 0, 0)");
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                ctx.fillStyle = glow;
+                ctx.beginPath();
+                ctx.ellipse(cx, cy, clamp(viewW * 0.28, 110, 280), clamp(viewH * 0.085, 42, 86), 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                const titleGlowY = viewH / 2 - clamp(viewH * 0.26, 126, 196);
+                const pulse = 0.75 + Math.sin(now * 0.003) * 0.15;
+                ctx.globalAlpha = pulse;
+                ctx.shadowBlur = 34;
+                ctx.shadowColor = "rgba(106, 248, 255, 0.44)";
+                ctx.strokeStyle = "rgba(104, 238, 255, 0.16)";
+                ctx.lineWidth = 12;
+                ctx.beginPath();
+                ctx.ellipse(cx, titleGlowY, clamp(viewW * 0.24, 110, 260), 32, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+                ctx.globalAlpha = 1;
+            }
+
+            function drawCandleEffects(now, rotX, rotY) {
+                if (currentState !== STATE.CAKE) return;
+                const s = clamp(Math.min(viewW / 620, viewH / 560), 0.9, 1.34);
+                const flameWorld = rotatePoint(0, (68 - 188) * s, 0, rotX, rotY);
+                const flame = projectPoint(flameWorld.x, flameWorld.y, flameWorld.z);
+
+                if (candleLit) {
+                    const pulse = 1 + Math.sin(now * 0.018) * 0.1;
+                    const glow = ctx.createRadialGradient(flame.x, flame.y, 0, flame.x, flame.y, 28 * pulse);
+                    glow.addColorStop(0, "rgba(255, 255, 255, 0.92)");
+                    glow.addColorStop(0.22, "rgba(255, 234, 128, 0.82)");
+                    glow.addColorStop(0.58, "rgba(55, 232, 255, 0.28)");
+                    glow.addColorStop(1, "rgba(55, 232, 255, 0)");
+                    ctx.save();
+                    ctx.globalCompositeOperation = "lighter";
+                    ctx.fillStyle = glow;
+                    ctx.beginPath();
+                    ctx.arc(flame.x, flame.y, 30 * pulse, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = "rgba(255, 244, 190, 0.95)";
+                    ctx.beginPath();
+                    ctx.ellipse(flame.x, flame.y - 6 * pulse, 5.5 * pulse, 14 * pulse, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                if (candleShockwaveStarted) {
+                    const elapsed = now - candleShockwaveStarted;
+                    if (elapsed < 950) {
+                        const radius = 12 + elapsed * 0.16;
+                        const alpha = 1 - elapsed / 950;
+                        ctx.save();
+                        ctx.globalCompositeOperation = "lighter";
+                        ctx.strokeStyle = `rgba(116, 248, 255, ${alpha * 0.58})`;
+                        ctx.lineWidth = 3 + alpha * 5;
+                        ctx.beginPath();
+                        ctx.arc(flame.x, flame.y, radius, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.restore();
+                    } else {
+                        candleShockwaveStarted = 0;
+                    }
+                }
+
+                for (let i = candleSmoke.length - 1; i >= 0; i -= 1) {
+                    const smoke = candleSmoke[i];
+                    smoke.x += smoke.vx;
+                    smoke.y += smoke.vy;
+                    smoke.z += smoke.vz || 0;
+                    smoke.alpha -= 0.0065;
+                    smoke.size += 0.075;
+                    const rotated = rotatePoint(smoke.x, smoke.y, smoke.z, rotX, rotY);
+                    const projected = projectPoint(rotated.x, rotated.y, rotated.z);
+                    ctx.globalAlpha = Math.max(0, smoke.alpha);
+                    ctx.fillStyle = "rgba(210, 245, 255, 0.66)";
+                    ctx.beginPath();
+                    ctx.arc(projected.x, projected.y, smoke.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    if (smoke.alpha <= 0) candleSmoke.splice(i, 1);
+                }
+
+                ctx.save();
+                ctx.globalCompositeOperation = "lighter";
+                for (let i = candleSparks.length - 1; i >= 0; i -= 1) {
+                    const spark = candleSparks[i];
+                    spark.x += spark.vx;
+                    spark.y += spark.vy;
+                    spark.z += spark.vz;
+                    spark.vx *= 0.95;
+                    spark.vy += 0.035;
+                    spark.vz *= 0.95;
+                    spark.alpha -= 0.022;
+                    const rotated = rotatePoint(spark.x, spark.y, spark.z, rotX, rotY);
+                    const projected = projectPoint(rotated.x, rotated.y, rotated.z);
+                    ctx.globalAlpha = Math.max(0, spark.alpha);
+                    ctx.fillStyle = spark.color;
+                    ctx.beginPath();
+                    ctx.arc(projected.x, projected.y, spark.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    if (spark.alpha <= 0) candleSparks.splice(i, 1);
+                }
+                ctx.restore();
+                ctx.globalAlpha = 1;
+            }
+
+            // ═══════════════════════════════════════
+            // 主渲染循环
+            // ═══════════════════════════════════════
+            function animate(now) {
+                if (lastFrameAt) {
+                    const delta = now - lastFrameAt;
+                    avgFrameMs += (delta - avgFrameMs) * 0.035;
+                    const targetQuality = avgFrameMs > 26 ? 0.68 : avgFrameMs > 21 ? 0.82 : 1;
+                    qualityScale += (targetQuality - qualityScale) * 0.02;
+                }
+                lastFrameAt = now;
+                drawBackground();
+
+                let rotY = 0;
+                let rotX = 0;
+                if (currentState === STATE.GLOBE) {
+                    rotY = angleY + now * 0.00025;
+                    rotX = angleX;
+                } else if (currentState === STATE.CAKE) {
+                    rotY = now * 0.00072;
+                    rotX = Math.sin(now * 0.00034) * 0.1;
+                }
+
+                drawCakeStageGlow(now);
+
+                ctx.globalCompositeOperation = "lighter";
+                for (let i = particles.length - 1; i >= 0; i -= 1) {
+                    const particle = particles[i];
+                    particle.update(rotX, rotY);
+                    particle.draw();
+                    if (currentState === STATE.BURST && particle.alpha <= 0) {
+                        particles.splice(i, 1);
+                    }
+                }
+                ctx.globalAlpha = 1;
+                ctx.globalCompositeOperation = "source-over";
+
+                drawCandleEffects(now, rotX, rotY);
+                drawBlessingOrbit(now);
+                update3DPhotoGlobe(now);
+
+                if (inputMode === "camera" && performance.now() - lastInputAt > 1600) {
+                    resetInputPoint();
+                }
+
+                requestAnimationFrame(animate);
+            }
+
+            window.addEventListener("resize", resize, { passive: true });
+            loadConfig();
+            refreshPhotoCards();
+            resize();
+            attachPointerFallback();
+            attachPhotoInput();
+            attachControlPanel();
+            startCameraTracking();
+            saveConfig();
+            requestAnimationFrame(animate);
+        })();
+    </script>
+</body>
+</html>

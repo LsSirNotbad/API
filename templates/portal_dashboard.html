@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>我的控制台 - API 用户中心</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%234f46e5'/%3E%3Cpath d='M25 20 13 32l12 12M39 20l12 12-12 12M36 14 28 50' fill='none' stroke='white' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{--primary:#4f46e5;--primary2:#2563eb;--ink:#172033;--muted:#697586;--line:#e6ebf2;--bg:#f6f8fc}*{box-sizing:border-box;margin:0;padding:0}body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif}.topbar{height:68px;background:rgba(255,255,255,.92);border-bottom:1px solid var(--line);display:flex;align-items:center;position:sticky;top:0;z-index:4;backdrop-filter:blur(12px)}.top-inner{width:min(1120px,calc(100% - 36px));margin:auto;display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{display:flex;align-items:center;gap:10px;font-weight:750}.logo{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;font-size:11px}.top-links{display:flex;align-items:center;gap:8px}.top-links a,.link-btn{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:#526075;text-decoration:none;font:inherit;font-size:13px;padding:9px 11px;border-radius:8px;cursor:pointer}.nav-icon{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.top-links a:hover,.link-btn:hover{background:#f0f2ff;color:var(--primary)}.wrap{width:min(1120px,calc(100% - 36px));margin:0 auto;padding:32px 0 52px}.welcome{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:25px}.welcome h1{font-size:26px;letter-spacing:-.4px}.welcome p{color:var(--muted);font-size:13px;margin-top:7px}.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{border:1px solid #d8e0eb;background:#fff;color:#344054;border-radius:10px;padding:10px 15px;cursor:pointer;font:inherit;font-size:13px;transition:.18s}.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(30,50,90,.07)}.btn.primary{background:linear-gradient(100deg,var(--primary),var(--primary2));border-color:transparent;color:#fff}.btn.soft{background:#eef0ff;border-color:#e0e3ff;color:var(--primary)}.btn.danger{color:#b42318;border-color:#f3c2bd}.btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}.hero{display:grid;grid-template-columns:1.55fr 1fr;gap:20px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:23px;box-shadow:0 4px 18px rgba(32,51,84,.035)}.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.card h2{font-size:16px}.hint{font-size:12px;color:var(--muted);line-height:1.75}.tag{flex:none;padding:5px 9px;border-radius:20px;background:#ecfdf3;color:#067647;font-size:11px}.token{display:flex;gap:10px;margin:20px 0 13px}.token input{height:45px;flex:1;min-width:0;border:1px solid #d6dee9;border-radius:10px;padding:0 13px;font:13px ui-monospace,Consolas,monospace;background:#f8fafc;color:#475467;outline:none}.token-note{padding:11px 13px;background:#f8f9ff;border-radius:10px;color:#626b8a;font-size:12px;line-height:1.7;margin:14px 0}.token-actions{display:flex;align-items:center;justify-content:space-between;gap:12px}.quota-card{color:#fff;border:0;background:linear-gradient(140deg,#3730a3,#4f46e5 52%,#2870db);position:relative;overflow:hidden}.quota-card:after{content:"";position:absolute;width:180px;height:180px;border:36px solid rgba(255,255,255,.055);border-radius:50%;right:-85px;top:-90px}.quota-card h2{color:#e5e9ff}.quota{font-size:45px;font-weight:750;margin:21px 0 6px;letter-spacing:-1px;position:relative;z-index:1}.quota small{font-size:14px;color:#dfe5ff;font-weight:400}.quota-card .hint{color:#dbe2ff}.bar{height:7px;background:rgba(255,255,255,.18);border-radius:10px;overflow:hidden;margin:19px 0 14px;position:relative;z-index:1}.bar i{display:block;height:100%;background:#fff;border-radius:10px;transition:width .3s}.recharge-link{position:relative;z-index:1;width:100%;margin-top:18px;background:#fff;color:#4338ca;border:0}.quick{margin:20px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.quick a{display:flex;align-items:center;gap:13px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;text-decoration:none;color:var(--ink);transition:.18s}.quick a:hover{border-color:#c8ccf5;transform:translateY(-2px)}.quick-num{width:31px;height:31px;display:grid;place-items:center;flex:none;border-radius:9px;background:#eef0ff;color:var(--primary);font-size:12px;font-weight:700}.quick b{display:block;font-size:13px;margin-bottom:4px}.quick span{font-size:11px;color:var(--muted)}.logs{margin-top:20px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #edf1f5;white-space:nowrap}th{color:#667085;font-size:12px;background:#f8fafc}.status{display:inline-block;padding:3px 8px;border-radius:12px;background:#ecfdf3;color:#067647;font-size:11px}.status.bad{background:#fef3f2;color:#b42318}.daily{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.daily span{padding:6px 9px;background:#f0f2fa;color:#526075;border-radius:7px;font-size:11px}.empty{color:#98a2b3;padding:26px 0;text-align:center}.modal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.48);place-items:center;padding:20px;z-index:10;backdrop-filter:blur(3px)}.modal.show{display:grid}.modal-box{width:min(590px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:20px;padding:26px;box-shadow:0 24px 70px rgba(15,23,42,.24)}.modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}.close{border:0;background:#f2f4f7;color:#667085;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:18px}.modal-box p{font-size:13px;color:var(--muted);line-height:1.75}.reward-summary{padding:13px 15px;border-radius:11px;background:#f4f5ff;color:#4f46e5;font-size:13px;margin:17px 0}.task{display:flex;align-items:center;gap:13px;padding:15px 0;border-bottom:1px solid #edf1f5}.task:last-child{border-bottom:0}.task-info{flex:1}.task-info b{font-size:14px}.task-info p{font-size:12px;margin-top:4px}.task-reward{color:#067647;font-size:12px;font-weight:650;white-space:nowrap}.task .btn{min-width:90px}.warning{color:#b42318!important}.msg{min-height:20px;color:#b42318;font-size:13px;margin-top:8px}.toast{display:none;position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:20;background:#172033;color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;box-shadow:0 8px 28px rgba(0,0,0,.2)}.toast.show{display:block}.quota-actions{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:9px}.tools{margin-top:20px}.tools-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px}.tool-card{padding:17px;border:1px solid var(--line);border-radius:12px;background:#fafbff}.tool-card h3{font-size:14px;margin-bottom:7px}.tool-card p{min-height:42px;font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:13px}.tool-card .btn{width:100%}.tool-badge{display:inline-block;margin-bottom:10px;padding:3px 7px;border-radius:6px;background:#eef0ff;color:var(--primary);font-size:10px}.modal-box.wide{width:min(900px,100%)}.quota-detail{white-space:normal;min-width:240px}.quota-change{font-weight:700;color:#067647}.quota-change.negative{color:#b42318}@media(max-width:800px){.tools-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.tools-grid{grid-template-columns:1fr}.quota-actions{grid-template-columns:1fr}}@media(max-width:800px){.hero{grid-template-columns:1fr}.quick{grid-template-columns:1fr}.welcome{align-items:flex-start;flex-direction:column}.top-links a{display:none}}@media(max-width:520px){.wrap{width:min(100% - 24px,1120px);padding-top:22px}.top-inner{width:calc(100% - 24px)}.card{padding:19px}.token{flex-direction:column}.token .btn{width:100%}.token-actions{align-items:flex-start;flex-direction:column}.task{align-items:flex-start;flex-wrap:wrap}.task .btn{width:100%}.welcome h1{font-size:23px}.brand-text{display:none}}
+
+/* 紧凑布局：减少重复入口与纵向留白 */
+.topbar{height:56px}.top-links a,.link-btn{padding:7px 9px}.wrap{padding:20px 0 30px}.welcome{margin-bottom:16px}.welcome p{margin-top:4px}.hero{gap:14px}.card{padding:16px;border-radius:14px}.btn{padding:8px 12px;border-radius:8px}.token{margin:12px 0 9px}.token input{height:38px}.token-note{margin:10px 0;padding:8px 10px;line-height:1.5}.quota{margin:12px 0 4px}.bar{margin:12px 0 10px}.recharge-link{margin-top:10px}.logs,.tools{margin-top:14px}.tools-grid{margin-top:10px;gap:10px}.tool-card{padding:12px}.tool-card h3{margin-bottom:5px}.tool-card p{min-height:30px;line-height:1.5;margin-bottom:8px}.tool-card .btn{padding:7px 10px}.tool-badge{margin-bottom:6px}table{margin-top:10px}th,td{padding:9px 10px}.daily{margin-top:10px}@media(max-width:520px){.wrap{padding-top:16px}.card{padding:14px}}
+
+/* 调用记录筛选与分页 */
+.log-filters{display:grid;grid-template-columns:minmax(160px,1.2fr) repeat(2,minmax(180px,1fr)) auto auto;gap:10px;align-items:end;margin-top:12px}
+.log-filter{display:block;color:var(--muted);font-size:12px}
+.log-filter select,.log-filter input{display:block;width:100%;height:36px;margin-top:5px;border:1px solid #d7dfea;border-radius:8px;background:#fff;color:var(--ink);padding:6px 9px;font:inherit;font-size:12px;outline:none}
+.log-filter select:focus,.log-filter input:focus{border-color:#6366f1;box-shadow:0 0 0 3px #eef0ff}
+.log-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;color:var(--muted);font-size:12px}
+.log-page-actions{display:flex;align-items:center;gap:10px}
+.log-interface{white-space:normal;min-width:180px}
+@media(max-width:800px){.log-filters{grid-template-columns:1fr 1fr}.log-filters .btn{width:100%}}
+@media(max-width:520px){.log-filters{grid-template-columns:1fr}.log-pagination{align-items:flex-start;flex-direction:column}}
+
+/* 实用工具：整张卡片可点击，操作统一在当前页弹窗完成 */
+button.tool-card{width:100%;color:var(--ink);text-align:left;cursor:pointer;transition:.18s;font:inherit}
+button.tool-card:hover{border-color:#bfc5f5;transform:translateY(-2px);box-shadow:0 8px 20px rgba(50,60,120,.08)}
+.tool-open{display:block;margin-top:8px;color:var(--primary);font-size:12px;font-weight:650}
+.tool-modal-box{width:min(840px,100%);padding:20px;border-radius:16px}
+.tool-modal-box .modal-head{margin-bottom:14px}
+.tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.tool-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tool-field{display:block;min-width:0;color:#475467;font-size:12px}
+.tool-field.full{grid-column:1/-1}
+.tool-input{display:block;width:100%;margin-top:6px;border:1px solid #d7dfea;border-radius:8px;background:#fff;color:var(--ink);padding:9px 10px;font:inherit;font-size:13px;outline:none}
+textarea.tool-input{min-height:120px;resize:vertical;line-height:1.6;font-family:ui-monospace,Consolas,monospace}
+.tool-input:focus{border-color:#6366f1;box-shadow:0 0 0 3px #eef0ff}
+.tool-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:14px 0 10px}
+.tool-actions .btn{text-decoration:none}
+.tool-output{min-height:54px;max-height:330px;overflow:auto;margin-top:10px;padding:12px;border:1px solid #e2e8f0;border-radius:9px;background:#f8fafc;color:#344054;font:12px/1.7 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+.tool-output.error{background:#fff7f6;color:#b42318;border-color:#f3c2bd}
+.tool-note{margin:8px 0;color:var(--muted);font-size:12px;line-height:1.65}
+.tool-checks{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;color:#475467;font-size:12px}
+.tool-checks label{display:inline-flex;align-items:center;gap:5px}
+.diff-line{display:block;padding:1px 5px;border-radius:3px;white-space:pre-wrap}
+.diff-add{color:#067647;background:#ecfdf3}.diff-remove{color:#b42318;background:#fef3f2}.diff-same{color:#667085}
+.qr-result{display:flex;justify-content:center;min-height:210px;padding:12px}.qr-result canvas{max-width:100%;height:auto!important}
+.image-preview{display:block;max-width:100%;max-height:220px;margin:10px auto;border-radius:9px;border:1px solid var(--line)}
+.ip-row{display:grid;grid-template-columns:110px 1fr;gap:10px;padding:4px 0;border-bottom:1px solid #edf1f5}
+.ip-row:last-child{border-bottom:0}.ip-row b{color:#667085;font-weight:600}
+@media(max-width:600px){.tool-grid,.tool-grid.three{grid-template-columns:1fr}.tool-modal-box{padding:16px}.tool-actions .btn{flex:1}.ip-row{grid-template-columns:85px 1fr}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="top-inner"><div class="brand"><span class="logo">API</span><span class="brand-text">API 用户中心</span></div><nav class="top-links" aria-label="控制台导航"><a href="/docs?view=catalog" id="docsNav"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>接口中心</a><button class="link-btn" onclick="loadAll()"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5"/><path d="M18.5 15a7 7 0 1 1-.8-7.8L20 10"/></svg>刷新数据</button><button class="link-btn" onclick="logout()"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H5v14h5M14 8l4 4-4 4M8 12h10"/></svg>退出登录</button></nav></div></header>
+<main class="wrap">
+  <section class="welcome"><div><h1>我的控制台</h1><p>管理接入凭证、额度与调用记录</p></div><div class="actions"><a class="btn primary" href="/docs?view=catalog" id="docsButton" style="text-decoration:none">进入接口中心</a></div></section>
+  <div class="hero">
+    <section class="card"><div class="card-head"><div><h2>我的专属 API Token</h2><p class="hint">调用接口的身份凭证，请勿分享给他人</p></div><span class="tag">仅本人可见</span></div><div class="token"><input id="tokenText" readonly value="加载中..." aria-label="Token"><button class="btn" id="copyMain" onclick="copyCurrentToken()">一键复制</button></div><div class="token-note" id="tokenNote">Token 明文只在首次发放或重置时展示一次。自动审批发放的 Token 请查看注册邮箱。</div><div class="token-note" id="tokenCreated" style="margin-top:-2px">Token 创建时间：加载中...</div><div class="token-actions"><button class="btn danger" id="resetBtn" onclick="openResetToken()">重置 Token</button><span class="hint">重置后旧 Token 立即失效</span></div><div class="msg" id="msg"></div></section>
+    <section class="card quota-card"><h2>剩余可用额度</h2><div class="quota"><span id="remaining">--</span> <small>次</small></div><p class="hint" id="quotaText">加载中...</p><div class="bar"><i id="quotaBar" style="width:0"></i></div><p class="hint" id="bonusText">额度长期累计，不会每日自动重置</p><div class="quota-actions"><button class="btn recharge-link" onclick="openRewards()">做任务领额度</button><button class="btn recharge-link" onclick="openQuotaLogs()">查看额度明细</button></div></section>
+  </div>
+  <section class="card tools"><div class="card-head"><div><h2>实用小工具</h2><p class="hint">点击卡片即可使用；在线工具仅登录后可用，本地工具不会上传内容</p></div><span class="tag">12 个可用工具</span></div><div class="tools-grid">
+    <button type="button" class="tool-card" onclick="openTool('json')"><span class="tool-badge">开发工具</span><h3>JSON 格式化</h3><p>校验、美化和压缩 JSON 内容。</p><span class="tool-open">打开工具 →</span></button>
+    <button type="button" class="tool-card" onclick="openTool('timestamp')"><span class="tool-badge">时间工具</span><h3>时间戳转换</h3><p>日期时间与 Unix 时间戳互转。</p><span class="tool-open">打开工具 →</span></button>
+    <button type="button" class="tool-card" onclick="openTool('diff')"><span class="tool-badge">文本工具</span><h3>文本对比</h3><p>按行对照文本并标记内容差异。</p><span class="tool-open">打开工具 →</span></button>
+    <button type="button" class="tool-card" onclick="openTool('qrcode')"><span class="tool-badge">生成工具</span><h3>二维码生成</h3><p>将文本或链接生成可下载二维码。</p><span class="tool-open">打开工具 →</span></button>
+    <button type="button" class="tool-card" onclick="openTool('image')"><span class="tool-badge">图片工具</span><h3>图片处理小助手</h3><p>批量调整尺寸，支持 7 种输出格式。</p><span class="tool-open">打开工具 →</span></button>
+    <button type="button" class="tool-card" onclick="openTool('random')"><span class="tool-badge">生成工具</span><h3>随机生成器</h3><p>生成随机数、字符串和 UUID。</p><span class="tool-open">打开工具 →</span></button>
+    <button type="button" class="tool-card" onclick="openTool('ip')"><span class="tool-badge">网络工具</span><h3>IP 查询</h3><p>识别地址类型并查询公开归属地。</p><span class="tool-open">打开工具 →</span></button>
+    <button type="button" class="tool-card" onclick="openTool('regex')"><span class="tool-badge">开发工具</span><h3>正则表达式</h3><p>测试匹配结果并批量替换文本。</p><span class="tool-open">打开工具 →</span></button>
+    <button type="button" class="tool-card" onclick="openTool('url')"><span class="tool-badge">开发工具</span><h3>URL 编解码</h3><p>UTF-8 URL 参数快速编码与解码。</p><span class="tool-open">打开工具 →</span></button>
+    <button type="button" class="tool-card" onclick="openTool('base64')"><span class="tool-badge">开发工具</span><h3>Base64 工具</h3><p>文本加解密，图片转 Data URI。</p><span class="tool-open">打开工具 →</span></button>
+    <button type="button" class="tool-card" onclick="openTool('network')"><span class="tool-badge">网络工具</span><h3>子网掩码 / IP 转 Int</h3><p>换算网段、可用主机与 IP 整数。</p><span class="tool-open">打开工具 →</span></button>
+    <button type="button" class="tool-card" onclick="openTool('fake')"><span class="tool-badge">生成工具</span><h3>随机假数据生成器</h3><p>一键生成 500 条姓名、手机号、地址。</p><span class="tool-open">打开工具 →</span></button>
+  </div></section>
+  <section class="card logs" id="logs">
+    <div class="card-head"><div><h2>近 7 天调用记录</h2><p class="hint">支持按时间和中文接口筛选，每页 20 条；明细按比例抽样记录，调用总量以额度流水的实际调用次数为准</p></div><button class="btn" onclick="loadLogs()">刷新记录</button></div>
+    <form class="log-filters" id="logFilters">
+      <label class="log-filter">中文接口<select id="logPath"><option value="">全部接口</option></select></label>
+      <label class="log-filter">开始时间<input type="datetime-local" id="logStart"></label>
+      <label class="log-filter">结束时间<input type="datetime-local" id="logEnd"></label>
+      <button class="btn primary" type="submit">查询</button>
+      <button class="btn" type="button" id="logReset">重置</button>
+    </form>
+    <div class="daily" id="daily"></div>
+    <div class="table-wrap"><table><thead><tr><th>时间</th><th>方法</th><th>接口</th><th>状态</th><th>耗时</th></tr></thead><tbody id="logBody"><tr><td colspan="5" class="empty">加载中...</td></tr></tbody></table></div>
+    <div class="log-pagination"><span id="logSummary">共 0 条</span><div class="log-page-actions"><button class="btn" type="button" id="logPrev">上一页</button><span id="logPageText">第 1 / 1 页</span><button class="btn" type="button" id="logNext">下一页</button></div></div>
+  </section>
+  <section class="card" id="danger" style="border-color:#f0c2c2">
+    <div class="card-head"><div><h2 style="color:#b42318">注销账号</h2><p class="hint">注销后将<strong>物理删除</strong>账号、专属 Token、额度流水、任务奖励、验证码与本人调用记录，且不可恢复。</p></div><button class="btn danger" type="button" onclick="openDeleteAccount()">注销账号</button></div>
+  </section>
+</main>
+<div class="modal" id="rewardModal"><div class="modal-box"><div class="modal-head"><div><h2>任务中心</h2><p>完成每日任务或一次性新手任务，即可领取累计调用额度。</p></div><button class="close" onclick="closeRewards()" aria-label="关闭">×</button></div><div class="reward-summary">已领取 <b id="rewardBonus">0</b> 次任务奖励额度，奖励长期累计。</div><div id="taskList"><p class="empty">任务加载中...</p></div></div></div>
+<div class="modal" id="quotaModal"><div class="modal-box wide"><div class="modal-head"><div><h2>额度明细</h2><p>查看初始额度、管理员调整、任务奖励与每次接口扣减。</p></div><button class="close" onclick="closeQuotaLogs()" aria-label="关闭">×</button></div><div class="reward-summary" id="quotaLogSummary">加载中...</div><div class="table-wrap"><table><thead><tr><th>时间</th><th>类型</th><th>变动</th><th>变动后剩余</th><th>说明</th><th>操作人</th></tr></thead><tbody id="quotaLogBody"></tbody></table></div></div></div>
+<div class="modal" id="tokenModal"><div class="modal-box"><div class="modal-head"><h2>请立即保存新 Token</h2></div><p class="warning">这是唯一一次明文展示。关闭后只能看到掩码；如未保存，请重置 Token。</p><div class="token"><input id="oneTimeToken" readonly><button class="btn primary" onclick="copyText($('#oneTimeToken').value)">复制</button></div><button class="btn" onclick="closeTokenModal()">我已妥善保存</button></div></div>
+<div class="modal" id="resetTokenModal"><div class="modal-box"><div class="modal-head"><h2>确认重置 Token？</h2></div><p class="warning">重置后旧 Token 将<strong>立即失效</strong>。请先确认所有自动化脚本、第三方调用代码都已准备好替换新 Token，否则相关调用会立刻报错。</p><label class="agree" style="display:flex;align-items:flex-start;gap:8px;margin:14px 0"><input type="checkbox" id="resetTokenAck" style="margin-top:3px" onchange="document.querySelector('#resetConfirmBtn').disabled=!this.checked"><span>我已确认所有依赖此 Token 的代码可以更新</span></label><div class="token-actions" style="justify-content:flex-end;gap:10px"><button class="btn" type="button" onclick="closeResetToken()">取消</button><button class="btn danger" type="button" id="resetConfirmBtn" onclick="resetToken()" disabled>确认重置</button></div></div></div>
+<div class="modal" id="deleteAccountModal"><div class="modal-box"><div class="modal-head"><h2>确认注销账号</h2></div><p class="warning">注销后所有数据将被<strong>物理删除且无法恢复</strong>，你正在使用的 Token 会立即失效。</p><label class="log-filter" style="display:block;margin:12px 0">输入当前账号邮箱<input id="deleteConfirmEmail" autocomplete="off" placeholder="you@example.com" style="width:100%;margin-top:6px"></label><label class="log-filter" style="display:block;margin:12px 0">输入登录密码<input id="deletePassword" type="password" autocomplete="off" maxlength="128" placeholder="登录密码" style="width:100%;margin-top:6px"></label><div class="token-actions" style="justify-content:flex-end;gap:10px"><button class="btn" type="button" onclick="closeDeleteAccount()">取消</button><button class="btn danger" type="button" onclick="deleteAccount()">确认注销</button></div></div></div>
+<div class="modal" id="toolModal"><div class="modal-box tool-modal-box" role="dialog" aria-modal="true" aria-labelledby="toolTitle" tabindex="-1"><div class="modal-head"><div><h2 id="toolTitle">实用工具</h2><p id="toolSubtitle"></p></div><button class="close" onclick="closeTool()" aria-label="关闭">×</button></div><div id="toolContent"></div></div></div>
+<div class="toast" id="toast"></div>
+<script src="/admin/static/qrcode.min.js"></script>
+<script>
+const $=s=>document.querySelector(s);const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));let currentRaw='',currentHint='',busy=false,toastTimer=null;
+async function api(url,options={}){const res=await fetch(url,{credentials:'same-origin',...options});const data=await res.json().catch(()=>({}));if(res.status===401){location.href='/portal/login';throw new Error('请先登录')}if(!res.ok)throw new Error(data.msg||data.detail||`请求失败（${res.status}）`);return data}
+function notify(text){clearTimeout(toastTimer);$('#toast').textContent=text;$('#toast').classList.add('show');toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),2600)}
+function showToken(raw,hint){currentRaw=raw||'';currentHint=hint||'****';$('#tokenText').value=raw||currentHint;$('#copyMain').disabled=!raw;if(raw){$('#oneTimeToken').value=raw;$('#tokenModal').classList.add('show')}}
+function closeTokenModal(){$('#tokenModal').classList.remove('show');currentRaw='';$('#tokenText').value=currentHint;$('#copyMain').disabled=true;$('#oneTimeToken').value=''}
+async function copyText(text){if(!text)return;try{await navigator.clipboard.writeText(text)}catch(e){const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}notify('已复制到剪贴板')}
+function copyCurrentToken(){if(currentRaw)copyText(currentRaw);else notify('Token 明文仅展示一次，可在注册邮箱查找或重置')}
+async function loadMe(){const r=await api('/api/portal/me');const d=r.data;$('#remaining').textContent=d.remaining;$('#quotaText').textContent=`累计已用 ${d.today_used} / ${d.total_quota} 次 · ${d.level} 用户`;$('#bonusText').textContent=d.bonus_quota?`基础 ${d.daily_quota} 次 + 任务奖励 ${d.bonus_quota} 次 · 长期累计`:'额度长期累计，完成任务可增加可用次数';$('#quotaBar').style.width=`${d.total_quota?Math.min(100,d.today_used*100/d.total_quota):100}%`;$('#docsNav').style.display=d.docs_enabled?'inline-flex':'none';$('#docsButton').style.display=d.docs_enabled?'inline-block':'none';$('#tokenCreated').textContent='Token 创建时间：'+(d.token_created_at||'未知')+' · 重置会立即让旧 Token 失效';showToken(d.new_token,d.token_hint)}
+let logPage=1,logPages=1;
+async function loadLogs(page=logPage){
+  const params=new URLSearchParams({days:'7',page:String(page),page_size:'20'});
+  const path=$('#logPath').value,start=$('#logStart').value,end=$('#logEnd').value;
+  if(path)params.set('path',path);
+  if(start)params.set('start_time',start);
+  if(end)params.set('end_time',end);
+  const r=await api('/api/portal/logs?'+params.toString());
+  logPage=r.page;logPages=r.pages;
+  const select=$('#logPath'),selectedPath=select.value;
+  select.innerHTML='<option value="">全部接口</option>'+(r.interfaces||[]).map(x=>`<option value="${esc(x.path)}">${esc(x.title)}</option>`).join('');
+  if([...select.options].some(option=>option.value===selectedPath))select.value=selectedPath;
+  $('#daily').innerHTML=r.daily.length?r.daily.map(x=>`<span>${esc(x.date)} · ${x.count} 次调用</span>`).join(''):'<span>当前筛选条件下暂无调用记录</span>';
+  $('#logBody').innerHTML=r.data.length?r.data.map(x=>`<tr><td>${esc(x.time)}</td><td>${esc(x.method)}</td><td class="log-interface"><b>${esc(x.title)}</b><br><code class="hint">${esc(x.path)}</code></td><td><span class="status ${x.status_code>=400?'bad':''}">${esc(x.status_code)}</span></td><td>${esc(x.duration_ms)} ms</td></tr>`).join(''):'<tr><td colspan="5" class="empty">当前筛选条件下暂无调用记录，可调整条件后重新查询</td></tr>';
+  $('#logSummary').textContent=`明细共 ${r.total} 条 · 调用总量 ${r.total_calls ?? r.total} 次${r.sampled?` · 明细按 1:${r.sample_rate} 抽样`:''} · 每页 ${r.page_size} 条`;
+  $('#logPageText').textContent=`第 ${logPage} / ${logPages} 页`;
+  $('#logPrev').disabled=logPage<=1;
+  $('#logNext').disabled=logPage>=logPages;
+}
+function resetLogs(){
+  $('#logPath').value='';$('#logStart').value='';$('#logEnd').value='';
+  loadLogs(1).catch(e=>notify(e.message));
+}
+async function loadRewards(){const r=await api('/api/portal/rewards');$('#rewardBonus').textContent=r.bonus_quota;const links={read_guide:'/docs?view=guide',api_test:'/docs?view=catalog',sandbox_test:'/docs?view=catalog',code_generate:'/docs?view=catalog'};$('#taskList').innerHTML=r.data.map(t=>{let action;if(t.claimed)action='<button class="btn" disabled>已领取</button>';else if(t.completed)action=`<button class="btn primary" onclick="claimTask('${t.key}')">领取 +${t.reward}</button>`;else if(t.key==='daily_checkin')action=`<button class="btn primary" onclick="claimTask('${t.key}')">签到 +${t.reward}</button>`;else if(t.key==='daily_login')action='<button class="btn" disabled>待完成</button>';else action=`<a class="btn soft" href="${links[t.key]||'/docs?view=guide'}" style="text-decoration:none">去完成</a>`;return `<div class="task"><div class="task-info"><b>${esc(t.title)}</b><p>${esc(t.description)}</p></div><span class="task-reward">+${t.reward} 次</span>${action}</div>`}).join('')}
+function openRewards(){$('#rewardModal').classList.add('show');loadRewards().catch(e=>notify(e.message))}
+function closeRewards(){$('#rewardModal').classList.remove('show')}
+async function openQuotaLogs(){$('#quotaModal').classList.add('show');$('#quotaLogSummary').textContent=$('#quotaText').textContent;$('#quotaLogBody').innerHTML='<tr><td colspan="6" class="empty">额度明细加载中...</td></tr>';try{const r=await api('/api/portal/quota-logs');const kinds={initial:'初始额度',admin:'后台调整',task:'任务奖励',api_call:'接口扣减'};$('#quotaLogBody').innerHTML=r.data.length?r.data.map(x=>`<tr><td>${esc(x.time)}</td><td>${esc(kinds[x.kind]||x.title||x.kind)}</td><td class="quota-change ${x.change<0?'negative':''}">${x.change>0?'+':''}${esc(x.change)}</td><td>${esc(x.balance_after)}</td><td class="quota-detail"><b>${esc(x.title)}</b><br><span class="hint">${esc(x.detail||'-')}</span>${x.path?`<br><code>${esc(x.path)}</code>`:''}</td><td>${esc(x.operator==='system'?'系统':x.operator)}</td></tr>`).join(''):'<tr><td colspan="6" class="empty">暂无额度明细</td></tr>'}catch(e){$('#quotaLogBody').innerHTML=`<tr><td colspan="6" class="empty">${esc(e.message)}</td></tr>`}}
+function closeQuotaLogs(){$('#quotaModal').classList.remove('show')}
+async function claimTask(key){if(busy)return;busy=true;try{const r=await api(`/api/portal/rewards/${key}/claim`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});notify(r.msg);await Promise.all([loadMe(),loadRewards()])}catch(e){notify(e.message)}finally{busy=false}}
+async function loadAll(){try{await loadMe();await loadLogs();$('#msg').textContent=''}catch(e){$('#msg').textContent=e.message}}
+function openDeleteAccount(){if(busy)return;$('#deleteConfirmEmail').value='';$('#deletePassword').value='';$('#deleteAccountModal').classList.add('show')}
+function closeDeleteAccount(){$('#deleteAccountModal').classList.remove('show')}
+async function deleteAccount(){
+  if(busy)return;
+  const confirmEmail=$('#deleteConfirmEmail').value.trim(),password=$('#deletePassword').value;
+  if(!confirmEmail||!password){notify('请填写邮箱和密码以确认注销');return}
+  busy=true;
+  try{
+    const r=await api('/api/portal/account/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirm_email:confirmEmail,password})});
+    closeDeleteAccount();notify(r.msg||'账号已注销');
+    setTimeout(()=>{location.href='/portal/login'},1200);
+  }catch(e){notify(e.message)}
+  finally{busy=false}
+}
+function openResetToken(){if(busy)return;$('#resetTokenAck').checked=false;$('#resetConfirmBtn').disabled=true;$('#resetTokenModal').classList.add('show')}
+function closeResetToken(){$('#resetTokenModal').classList.remove('show')}
+async function resetToken(){
+  if(busy||!$('#resetTokenAck').checked)return;
+  busy=true;$('#resetConfirmBtn').disabled=true;$('#resetBtn').disabled=true;
+  try{
+    const r=await api('/api/portal/token/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    closeResetToken();showToken(r.token,r.token_hint);notify(r.msg);
+    loadMe();
+  }catch(e){$('#msg').textContent=e.message}
+  finally{busy=false;$('#resetBtn').disabled=false;$('#resetConfirmBtn').disabled=true}
+}
+async function logout(){await api('/api/portal/logout',{method:'POST'});location.href='/portal/login'}
+const TOOL_DEFS={
+  json:['JSON 格式化','在浏览器本地校验、美化或压缩 JSON，不会上传内容'],
+  timestamp:['时间戳转换','支持秒、毫秒时间戳与本地日期时间互转'],
+  diff:['文本对比','按行比较两段文本，绿色为新增，红色为删除'],
+  qrcode:['二维码生成','输入文本或链接，生成二维码后可下载 PNG 图片'],
+  image:['图片处理小助手','登录后批量处理 1-8 张图片，多图结果自动打包为 ZIP'],
+  random:['随机生成器','使用浏览器加密随机源生成随机数、字符串或 UUID'],
+  ip:['IP 查询','识别 IPv4 / IPv6 类型；公网地址可查询归属地与运营商'],
+  regex:['正则表达式','使用 JavaScript 正则语法进行匹配测试与文本替换'],
+  url:['URL 编解码','使用 Python urllib.parse.quote / unquote 进行 UTF-8 编解码'],
+  base64:['Base64 工具','使用 Python base64 处理文本，图片转换为带 MIME 前缀的 Data URI'],
+  network:['子网掩码 / IP 转 Int','使用 Python ipaddress 换算网段、掩码、主机范围和整数'],
+  fake:['随机假数据生成器','使用 Faker 生成中文姓名、手机号和地址，单次最多 500 条']
+};
+const TOOL_RENDERERS={
+  json:()=>`<label class="tool-field">JSON 内容<textarea class="tool-input" id="jsonInput" spellcheck="false">{"name":"API 平台","tags":["实用","高效"],"enabled":true}</textarea></label><div class="tool-actions"><button class="btn primary" onclick="processJson('format')">格式化</button><button class="btn" onclick="processJson('compact')">压缩</button><button class="btn" onclick="processJson('validate')">校验</button><button class="btn soft" onclick="copyToolOutput('jsonOutput')">复制结果</button></div><pre class="tool-output" id="jsonOutput">请选择格式化、压缩或校验。</pre>`,
+  timestamp:()=>`<div class="tool-grid"><label class="tool-field">Unix 时间戳<input class="tool-input" id="timestampInput" value="${Math.floor(Date.now()/1000)}" inputmode="numeric"></label><label class="tool-field">时间戳单位<select class="tool-input" id="timestampUnit"><option value="s">秒（10 位）</option><option value="ms">毫秒（13 位）</option></select></label></div><div class="tool-actions"><button class="btn primary" onclick="timestampToDate()">转为日期时间</button><button class="btn" onclick="fillNowTime()">使用当前时间</button></div><div class="tool-grid"><label class="tool-field full">日期时间<input class="tool-input" id="dateInput" type="datetime-local" step="1"></label></div><div class="tool-actions"><button class="btn primary" onclick="dateToTimestamp()">转为时间戳</button><button class="btn soft" onclick="copyToolOutput('timeOutput')">复制结果</button></div><pre class="tool-output" id="timeOutput">转换结果会显示在这里。</pre>`,
+  diff:()=>`<div class="tool-grid"><label class="tool-field">原始文本<textarea class="tool-input" id="diffOld" placeholder="输入原始文本"></textarea></label><label class="tool-field">新文本<textarea class="tool-input" id="diffNew" placeholder="输入需要对比的新文本"></textarea></label></div><div class="tool-actions"><button class="btn primary" onclick="renderTextDiff()">开始对比</button><button class="btn" onclick="clearTextDiff()">清空</button></div><div class="tool-note" id="diffSummary">最多处理 100 万个行组合。</div><div class="tool-output" id="diffOutput">对比结果会显示在这里。</div>`,
+  qrcode:()=>`<label class="tool-field">文本或链接<textarea class="tool-input" id="qrText" maxlength="2000">https://example.com</textarea></label><div class="tool-grid"><label class="tool-field">图片尺寸<select class="tool-input" id="qrSize"><option>200</option><option selected>300</option><option>400</option></select></label><label class="tool-field">容错等级<select class="tool-input" id="qrLevel"><option value="L">L · 约 7%</option><option value="M" selected>M · 约 15%</option><option value="Q">Q · 约 25%</option><option value="H">H · 约 30%</option></select></label></div><div class="tool-actions"><button class="btn primary" onclick="generateQr()">生成二维码</button><button class="btn soft" id="qrDownload" onclick="downloadQr()" disabled>下载 PNG</button></div><div class="tool-output qr-result" id="qrOutput">点击“生成二维码”查看结果。</div>`,
+  image:()=>`<label class="tool-field">选择图片（1-8 张，单张最大 20MB，合计最大 50MB）<input class="tool-input" id="imageFile" type="file" accept="image/*,.tif,.tiff,.ico" multiple onchange="loadImageToolFile(this)"></label><img class="image-preview" id="imagePreview" alt="首张原始图片预览" hidden><div class="tool-note" id="imageInfo">尚未选择图片。</div><div class="tool-grid three"><label class="tool-field">目标宽度（px）<input class="tool-input" id="imageWidth" type="number" min="1" max="10000" oninput="syncImageRatio('width')"></label><label class="tool-field">目标高度（px）<input class="tool-input" id="imageHeight" type="number" min="1" max="10000" oninput="syncImageRatio('height')"></label><label class="tool-field">输出格式<select class="tool-input" id="imageFormat" onchange="syncImageFormat()"><option value="png">PNG</option><option value="jpeg">JPEG</option><option value="webp">WebP</option><option value="gif">GIF</option><option value="bmp">BMP</option><option value="tiff">TIFF</option><option value="ico">ICO（最大 256×256）</option></select></label></div><div class="tool-checks"><label><input id="imageKeepRatio" type="checkbox" checked>保持宽高比（在目标尺寸内等比缩放）</label></div><label class="tool-field" id="imageQualityRow" style="margin-top:10px">压缩质量 <span id="imageQualityText">85%</span><input class="tool-input" id="imageQuality" type="range" min="10" max="100" value="85" oninput="$('#imageQualityText').textContent=this.value+'%'"></label><div class="tool-actions"><button class="btn primary" id="imageProcessBtn" onclick="processImage()">开始批量处理</button><a class="btn soft" id="imageDownload" hidden>下载处理结果</a></div><pre class="tool-output" id="imageOutput">处理结果会显示在这里。</pre><img class="image-preview" id="imageResult" alt="单张处理后图片预览" hidden>`, 
+  random:()=>`<div class="tool-grid"><label class="tool-field">生成类型<select class="tool-input" id="randomType" onchange="syncRandomForm()"><option value="number">随机整数</option><option value="string">随机字符串</option><option value="uuid">UUID</option></select></label><label class="tool-field">生成数量（1-100）<input class="tool-input" id="randomCount" type="number" min="1" max="100" value="10"></label></div><div class="tool-grid" id="randomNumberFields" style="margin-top:12px"><label class="tool-field">最小值<input class="tool-input" id="randomMin" type="number" value="1"></label><label class="tool-field">最大值<input class="tool-input" id="randomMax" type="number" value="100"></label></div><div id="randomStringFields" hidden><label class="tool-field" style="margin-top:12px">字符串长度（1-128）<input class="tool-input" id="randomLength" type="number" min="1" max="128" value="16"></label><div class="tool-checks"><label><input id="randomLower" type="checkbox" checked>小写字母</label><label><input id="randomUpper" type="checkbox" checked>大写字母</label><label><input id="randomDigits" type="checkbox" checked>数字</label><label><input id="randomSymbols" type="checkbox">符号</label></div></div><div class="tool-actions"><button class="btn primary" onclick="generateRandom()">立即生成</button><button class="btn soft" onclick="copyToolOutput('randomOutput')">复制结果</button></div><pre class="tool-output" id="randomOutput">生成结果会显示在这里。</pre>`,
+  ip:()=>`<label class="tool-field">IP 地址<input class="tool-input" id="ipInput" placeholder="留空查询当前访问 IP，如 8.8.8.8" maxlength="100"></label><div class="tool-actions"><button class="btn primary" id="ipQueryBtn" onclick="queryIp()">查询 IP</button><button class="btn" onclick="$('#ipInput').value='';queryIp()">查询我的 IP</button></div><p class="tool-note">公网归属地由服务器查询第三方公开服务，不消耗接口调用额度。</p><div class="tool-output" id="ipOutput">输入 IPv4 或 IPv6 地址后开始查询。</div>`,
+  url:()=>`<label class="tool-field">需要编解码的文本<textarea class="tool-input" id="urlInput" placeholder="例如：https://example.com/search?q=中文"></textarea></label><div class="tool-actions"><button class="btn primary" onclick="runUrlTool('encode')">URL 编码</button><button class="btn" onclick="runUrlTool('decode')">URL 解码</button><button class="btn soft" onclick="copyToolOutput('urlOutput')">复制结果</button></div><pre class="tool-output" id="urlOutput">编码时除字母、数字等安全字符外都会进行转义。</pre>`,
+  base64:()=>`<label class="tool-field">文本 Base64 加解密<textarea class="tool-input" id="base64Input" placeholder="输入 UTF-8 文本或 Base64 内容"></textarea></label><div class="tool-actions"><button class="btn primary" onclick="runBase64Tool('encode')">Base64 加密</button><button class="btn" onclick="runBase64Tool('decode')">Base64 解密</button></div><label class="tool-field" style="margin-top:14px">图片转 Base64（单张最大 10MB）<input class="tool-input" id="base64ImageFile" type="file" accept="image/*,.tif,.tiff" onchange="imageToBase64(this)"></label><div class="tool-actions"><button class="btn soft" onclick="copyToolOutput('base64Output')">复制结果</button></div><pre class="tool-output" id="base64Output">图片结果会自动添加 data:image/jpeg;base64, 等对应 MIME 前缀。</pre>`,
+  network:()=>`<label class="tool-field">IP / CIDR / 子网掩码<input class="tool-input" id="networkInput" value="192.168.1.10/24" placeholder="192.168.1.10/24 或 255.255.255.0"></label><div class="tool-actions"><button class="btn primary" onclick="runNetworkTool('network')">子网掩码换算</button><button class="btn" onclick="runNetworkTool('int')">IP 转 Int</button><button class="btn soft" onclick="copyToolOutput('networkOutput')">复制结果</button></div><pre class="tool-output" id="networkOutput">IP 转 Int 时仅输入 IPv4 或 IPv6 地址，不要带前缀。</pre>`,
+  fake:()=>`<div class="tool-grid"><label class="tool-field">数据类型<select class="tool-input" id="fakeKind"><option value="all">姓名 + 手机号 + 地址</option><option value="name">仅姓名</option><option value="phone">仅手机号</option><option value="address">仅地址</option></select></label><label class="tool-field">生成数量（1-500）<input class="tool-input" id="fakeCount" type="number" min="1" max="500" value="500"></label></div><div class="tool-actions"><button class="btn primary" onclick="generateFakeData()">一键生成</button><button class="btn soft" onclick="copyToolOutput('fakeOutput')">复制结果</button></div><pre class="tool-output" id="fakeOutput">默认一键生成 500 条中文假数据。</pre>`,
+  regex:()=>`<label class="tool-field">正则表达式<input class="tool-input" id="regexPattern" placeholder="例如：[A-Za-z]+" spellcheck="false"></label><div class="tool-checks"><label><input id="regexG" type="checkbox" checked>全局 g</label><label><input id="regexI" type="checkbox">忽略大小写 i</label><label><input id="regexM" type="checkbox">多行 m</label><label><input id="regexS" type="checkbox">单行 s</label></div><label class="tool-field" style="margin-top:12px">测试文本<textarea class="tool-input" id="regexText" placeholder="输入需要匹配或替换的文本"></textarea></label><label class="tool-field" style="margin-top:12px">替换为（支持 $1 等捕获组引用）<input class="tool-input" id="regexReplacement" placeholder="仅在替换时使用"></label><div class="tool-actions"><button class="btn primary" onclick="runRegex('match')">匹配测试</button><button class="btn" onclick="runRegex('replace')">替换全部</button><button class="btn soft" onclick="copyToolOutput('regexOutput')">复制结果</button></div><pre class="tool-output" id="regexOutput">匹配或替换结果会显示在这里。</pre>`
+};
+let toolSourceUrl='',toolResultUrl='',toolSourceImage=null,toolSourceFiles=[];
+function resetToolState(){
+  if(toolSourceUrl)URL.revokeObjectURL(toolSourceUrl);
+  if(toolResultUrl)URL.revokeObjectURL(toolResultUrl);
+  toolSourceUrl='';toolResultUrl='';toolSourceImage=null;toolSourceFiles=[];
+}
+function openTool(key){
+  if(!TOOL_DEFS[key])return;
+  resetToolState();
+  $('#toolTitle').textContent=TOOL_DEFS[key][0];$('#toolSubtitle').textContent=TOOL_DEFS[key][1];
+  $('#toolContent').innerHTML=TOOL_RENDERERS[key]();
+  $('#toolModal').classList.add('show');document.body.style.overflow='hidden';
+  if(key==='timestamp')fillNowTime();
+  if(key==='random')syncRandomForm();
+  if(key==='image')syncImageFormat();
+  setTimeout(()=>$('.tool-modal-box').focus(),0);
+}
+function closeTool(){
+  $('#toolModal').classList.remove('show');document.body.style.overflow='';
+  resetToolState();$('#toolContent').innerHTML='';
+}
+function setToolOutput(id,text,error=false){
+  const el=document.getElementById(id);if(!el)return;
+  el.textContent=text;el.classList.toggle('error',error);
+}
+function copyToolOutput(id){const el=document.getElementById(id);if(el)copyText(el.textContent)}
+function formatBytes(size){if(size<1024)return `${size} B`;if(size<1048576)return `${(size/1024).toFixed(1)} KB`;return `${(size/1048576).toFixed(2)} MB`}
+function downloadBlob(blob,filename){
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function processJson(mode){
+  try{
+    const value=JSON.parse($('#jsonInput').value);
+    if(mode==='validate'){
+      const kind=Array.isArray(value)?'数组':value===null?'null':typeof value;
+      setToolOutput('jsonOutput',`JSON 格式正确。\n顶层类型：${kind}\n${kind==='对象'||kind==='object'?`顶层字段数：${Object.keys(value).length}`:''}`);
+    }else setToolOutput('jsonOutput',JSON.stringify(value,null,mode==='format'?2:0));
+  }catch(e){setToolOutput('jsonOutput',`JSON 格式错误：${e.message}`,true)}
+}
+function fillNowTime(){
+  const now=new Date();$('#timestampInput').value=Math.floor(now.getTime()/1000);$('#timestampUnit').value='s';
+  $('#dateInput').value=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,19);
+}
+function timestampToDate(){
+  const raw=$('#timestampInput').value.trim();
+  if(!/^-?\d+(\.\d+)?$/.test(raw))return setToolOutput('timeOutput','请输入有效的数字时间戳。',true);
+  const value=Number(raw),ms=$('#timestampUnit').value==='s'?value*1000:value,date=new Date(ms);
+  if(!Number.isFinite(ms)||Number.isNaN(date.getTime()))return setToolOutput('timeOutput','时间戳超出可转换范围。',true);
+  setToolOutput('timeOutput',`本地时间：${date.toLocaleString('zh-CN',{hour12:false})}\nUTC 时间：${date.toISOString()}\n秒时间戳：${Math.floor(ms/1000)}\n毫秒时间戳：${Math.floor(ms)}`);
+}
+function dateToTimestamp(){
+  const raw=$('#dateInput').value;if(!raw)return setToolOutput('timeOutput','请先选择日期时间。',true);
+  const date=new Date(raw);if(Number.isNaN(date.getTime()))return setToolOutput('timeOutput','日期时间无效。',true);
+  setToolOutput('timeOutput',`本地时间：${date.toLocaleString('zh-CN',{hour12:false})}\n秒时间戳：${Math.floor(date.getTime()/1000)}\n毫秒时间戳：${date.getTime()}`);
+}
+function clearTextDiff(){
+  $('#diffOld').value='';$('#diffNew').value='';$('#diffSummary').textContent='最多处理 100 万个行组合。';setToolOutput('diffOutput','对比结果会显示在这里。');
+}
+function renderTextDiff(){
+  const oldText=$('#diffOld').value,newText=$('#diffNew').value;
+  if(oldText.length>200000||newText.length>200000)return setToolOutput('diffOutput','每段文本不能超过 200000 个字符。',true);
+  const a=oldText.replace(/\r\n?/g,'\n').split('\n'),b=newText.replace(/\r\n?/g,'\n').split('\n'),n=a.length,m=b.length,stride=m+1;
+  if((n+1)*(m+1)>1000000)return setToolOutput('diffOutput','文本行数过多，请分段对比。',true);
+  const dp=new Uint32Array((n+1)*(m+1));
+  for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)dp[i*stride+j]=a[i]===b[j]?dp[(i+1)*stride+j+1]+1:Math.max(dp[(i+1)*stride+j],dp[i*stride+j+1]);
+  const rows=[];let i=0,j=0,added=0,removed=0,same=0;
+  while(i<n||j<m){
+    if(i<n&&j<m&&a[i]===b[j]){rows.push(['same',a[i]]);i++;j++;same++}
+    else if(j<m&&(i===n||dp[i*stride+j+1]>=dp[(i+1)*stride+j])){rows.push(['add',b[j]]);j++;added++}
+    else{rows.push(['remove',a[i]]);i++;removed++}
+  }
+  $('#diffSummary').textContent=`新增 ${added} 行，删除 ${removed} 行，相同 ${same} 行。`;
+  $('#diffOutput').classList.remove('error');$('#diffOutput').innerHTML=rows.map(([type,text])=>`<span class="diff-line diff-${type}">${type==='add'?'+ ':type==='remove'?'- ':'  '}${esc(text)}</span>`).join('');
+}
+function generateQr(){
+  const text=$('#qrText').value.trim(),container=$('#qrOutput');container.classList.remove('error');
+  if(!text)return setToolOutput('qrOutput','请输入需要生成二维码的文本或链接。',true);
+  if(typeof QRCode==='undefined')return setToolOutput('qrOutput','二维码组件加载失败，请刷新页面后重试。',true);
+  container.innerHTML='';
+  try{
+    const size=Number($('#qrSize').value);
+    new QRCode(container,{text,width:size,height:size,colorDark:'#172033',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel[$('#qrLevel').value]});
+    $('#qrDownload').disabled=!container.querySelector('canvas');
+  }catch(e){setToolOutput('qrOutput',`生成失败：${e.message}`,true);$('#qrDownload').disabled=true}
+}
+function downloadQr(){
+  const canvas=$('#qrOutput canvas');if(!canvas)return;
+  canvas.toBlob(blob=>{if(blob)downloadBlob(blob,'qrcode.png')},'image/png');
+}
+function syncImageFormat(){$('#imageQualityRow').style.display=['jpeg','webp'].includes($('#imageFormat').value)?'':'none'}
+function loadImageToolFile(input){
+  const files=[...(input.files||[])];resetToolState();toolSourceFiles=files;
+  $('#imageDownload').hidden=true;$('#imageResult').hidden=true;$('#imagePreview').hidden=true;
+  $('#imageInfo').textContent='尚未选择图片。';setToolOutput('imageOutput','处理结果会显示在这里。');
+  if(!files.length)return;
+  if(files.length>8){toolSourceFiles=[];return setToolOutput('imageOutput','一次最多选择 8 张图片。',true)}
+  if(files.some(file=>file.size>20*1024*1024)){toolSourceFiles=[];return setToolOutput('imageOutput','单张图片不能超过 20MB。',true)}
+  const total=files.reduce((sum,file)=>sum+file.size,0);
+  if(total>50*1024*1024){toolSourceFiles=[];return setToolOutput('imageOutput','图片原始大小合计不能超过 50MB。',true)}
+  const file=files[0];toolSourceUrl=URL.createObjectURL(file);const image=new Image();
+  setToolOutput('imageOutput','正在读取首张图片...');
+  image.onload=()=>{
+    if(!document.getElementById('imageWidth')||toolSourceFiles[0]!==file)return;
+    toolSourceImage=image;$('#imageWidth').value=image.naturalWidth;$('#imageHeight').value=image.naturalHeight;
+    $('#imagePreview').src=toolSourceUrl;$('#imagePreview').hidden=false;
+    $('#imageInfo').textContent=`已选 ${files.length} 张 · 合计 ${formatBytes(total)} · 首张 ${image.naturalWidth} × ${image.naturalHeight}`;
+    setToolOutput('imageOutput','图片已加载，可设置目标尺寸和输出格式。');
+  };
+  image.onerror=()=>{if(document.getElementById('imageInfo')){$('#imageInfo').textContent=`已选 ${files.length} 张 · 合计 ${formatBytes(total)}`;setToolOutput('imageOutput','首张图片无法预览，仍可提交由服务器处理。')}};
+  image.src=toolSourceUrl;
+}
+function syncImageRatio(changed){
+  if(!toolSourceImage||!$('#imageKeepRatio').checked)return;
+  const ratio=toolSourceImage.naturalWidth/toolSourceImage.naturalHeight;
+  if(changed==='width'){
+    const width=Number($('#imageWidth').value);if(width>0)$('#imageHeight').value=Math.max(1,Math.round(width/ratio));
+  }else{
+    const height=Number($('#imageHeight').value);if(height>0)$('#imageWidth').value=Math.max(1,Math.round(height*ratio));
+  }
+}
+async function processImage(){
+  if(!toolSourceFiles.length)return setToolOutput('imageOutput','请先选择 1-8 张图片。',true);
+  const width=Number($('#imageWidth').value),height=Number($('#imageHeight').value);
+  if(!Number.isInteger(width)||!Number.isInteger(height)||width<1||height<1||width>10000||height>10000||width*height>40000000)return setToolOutput('imageOutput','尺寸需为 1-10000 的整数，且总像素不能超过 4000 万。',true);
+  const button=$('#imageProcessBtn'),form=new FormData();
+  toolSourceFiles.forEach(file=>form.append('files',file));
+  form.append('width',width);form.append('height',height);form.append('output_format',$('#imageFormat').value);
+  form.append('quality',$('#imageQuality').value);form.append('keep_ratio',$('#imageKeepRatio').checked);
+  button.disabled=true;setToolOutput('imageOutput',`正在处理 ${toolSourceFiles.length} 张图片...`);
+  try{
+    const res=await fetch('/api/portal/tools/image-process',{method:'POST',credentials:'same-origin',body:form});
+    if(res.status===401){location.href='/portal/login';return}
+    if(!res.ok){const data=await res.json().catch(()=>({}));throw new Error(data.detail||data.msg||`处理失败（${res.status}）`)}
+    const blob=await res.blob();if(!document.getElementById('imageDownload'))return;
+    if(toolResultUrl)URL.revokeObjectURL(toolResultUrl);toolResultUrl=URL.createObjectURL(blob);
+    const disposition=res.headers.get('Content-Disposition')||'',utf8=disposition.match(/filename\*=UTF-8''([^;]+)/i),basic=disposition.match(/filename="([^"]+)"/i);
+    let filename=toolSourceFiles.length>1?'processed_images.zip':'processed_image';if(utf8){try{filename=decodeURIComponent(utf8[1])}catch(e){}}else if(basic)filename=basic[1];
+    const link=$('#imageDownload');link.href=toolResultUrl;link.download=filename;link.textContent=toolSourceFiles.length>1?'下载 ZIP 压缩包':'下载处理结果';link.hidden=false;
+    if(toolSourceFiles.length===1&&['image/png','image/jpeg','image/webp','image/gif','image/bmp'].includes(blob.type)){$('#imageResult').src=toolResultUrl;$('#imageResult').hidden=false}else $('#imageResult').hidden=true;
+    setToolOutput('imageOutput',`处理完成：${res.headers.get('X-Processed-Count')||toolSourceFiles.length} 张\n输出大小：${formatBytes(blob.size)}\n${toolSourceFiles.length>1?'多图已打包为 ZIP。':'可直接下载处理结果。'}`);
+  }catch(e){setToolOutput('imageOutput',e.message,true)}finally{if(document.getElementById('imageProcessBtn'))button.disabled=false}
+}
+function syncRandomForm(){
+  const type=$('#randomType').value;$('#randomNumberFields').hidden=type!=='number';$('#randomStringFields').hidden=type!=='string';
+}
+function secureRandom(max){
+  if(!window.crypto||!crypto.getRandomValues)throw new Error('当前浏览器不支持安全随机数');
+  const range=0x100000000,limit=Math.floor(range/max)*max,values=new Uint32Array(1);let value;
+  do{crypto.getRandomValues(values);value=values[0]}while(value>=limit);return value%max;
+}
+function makeUuid(){
+  if(crypto.randomUUID)return crypto.randomUUID();
+  const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;
+  const h=[...bytes].map(x=>x.toString(16).padStart(2,'0')).join('');return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
+}
+function generateRandom(){
+  try{
+    const type=$('#randomType').value,count=Number($('#randomCount').value),results=[];
+    if(!Number.isInteger(count)||count<1||count>100)throw new Error('生成数量需为 1-100 的整数');
+    if(type==='number'){
+      const min=Number($('#randomMin').value),max=Number($('#randomMax').value);
+      if(!Number.isSafeInteger(min)||!Number.isSafeInteger(max)||min>max||max-min+1>1000000000)throw new Error('请输入有效整数范围，跨度不能超过 10 亿');
+      for(let i=0;i<count;i++)results.push(String(min+secureRandom(max-min+1)));
+    }else if(type==='string'){
+      const length=Number($('#randomLength').value);if(!Number.isInteger(length)||length<1||length>128)throw new Error('字符串长度需为 1-128 的整数');
+      let chars='';if($('#randomLower').checked)chars+='abcdefghijklmnopqrstuvwxyz';if($('#randomUpper').checked)chars+='ABCDEFGHIJKLMNOPQRSTUVWXYZ';if($('#randomDigits').checked)chars+='0123456789';if($('#randomSymbols').checked)chars+='!@#$%^&*()-_=+[]{};:,.?/';
+      if(!chars)throw new Error('请至少选择一种字符类型');
+      for(let i=0;i<count;i++){let value='';for(let j=0;j<length;j++)value+=chars[secureRandom(chars.length)];results.push(value)}
+    }else for(let i=0;i<count;i++)results.push(makeUuid());
+    setToolOutput('randomOutput',results.join('\n'));
+  }catch(e){setToolOutput('randomOutput',e.message,true)}
+}
+async function toolJson(path,payload){
+  const r=await api(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  if(r.code!==200)throw new Error(r.msg||'处理失败');return r.data||{};
+}
+async function runUrlTool(mode){
+  try{const d=await toolJson('/api/portal/tools/url',{text:$('#urlInput').value,mode});setToolOutput('urlOutput',d.result||'（空结果）')}catch(e){setToolOutput('urlOutput',e.message,true)}
+}
+async function runBase64Tool(mode){
+  try{const d=await toolJson('/api/portal/tools/base64',{text:$('#base64Input').value,mode});setToolOutput('base64Output',d.result||'（空结果）')}catch(e){setToolOutput('base64Output',e.message,true)}
+}
+async function imageToBase64(input){
+  const file=input.files&&input.files[0];if(!file)return;
+  if(file.size>10*1024*1024)return setToolOutput('base64Output','图片不能超过 10MB。',true);
+  const form=new FormData();form.append('file',file);setToolOutput('base64Output','正在读取并转换图片...');
+  try{
+    const r=await api('/api/portal/tools/image-base64',{method:'POST',body:form});
+    if(r.code!==200)throw new Error(r.msg||'转换失败');setToolOutput('base64Output',r.data.result);
+  }catch(e){setToolOutput('base64Output',e.message,true)}
+}
+async function runNetworkTool(mode){
+  try{
+    const d=await toolJson('/api/portal/tools/network',{text:$('#networkInput').value,mode});
+    const rows=mode==='int'?[['IP 地址',d.ip],['地址版本',`IPv${d.version}`],['十进制整数',d.integer],['十六进制',d.hex]]:[['输入 IP',d.input_ip],['网段',d.network],['网络地址',d.network_address],['子网掩码',d.netmask],['前缀长度',`/${d.prefix}`],['反掩码',d.wildcard],['广播地址',d.broadcast],['首个可用地址',d.first_host],['最后可用地址',d.last_host],['地址总数',d.total],['可用地址数',d.usable]];
+    setToolOutput('networkOutput',rows.filter(row=>row[1]!==''&&row[1]!=null).map(row=>`${row[0]}：${row[1]}`).join('\n'));
+  }catch(e){setToolOutput('networkOutput',e.message,true)}
+}
+async function generateFakeData(){
+  const count=Number($('#fakeCount').value);
+  if(!Number.isInteger(count)||count<1||count>500)return setToolOutput('fakeOutput','生成数量需为 1-500 的整数。',true);
+  setToolOutput('fakeOutput','正在生成假数据...');
+  try{
+    const d=await toolJson('/api/portal/tools/fake-data',{kind:$('#fakeKind').value,count}),rows=d.rows||[];
+    const labels={name:'姓名',phone:'手机号',address:'地址'},keys=Object.keys(rows[0]||{name:'',phone:'',address:''});
+    const lines=[keys.map(key=>labels[key]).join('\t'),...rows.map(row=>keys.map(key=>row[key]).join('\t'))];
+    setToolOutput('fakeOutput',lines.join('\n'));
+  }catch(e){setToolOutput('fakeOutput',e.message,true)}
+}
+async function queryIp(){
+  const input=$('#ipInput').value.trim(),button=$('#ipQueryBtn');button.disabled=true;setToolOutput('ipOutput','正在查询，请稍候...');
+  try{
+    const r=await api(`/api/portal/tools/ip-query?ip=${encodeURIComponent(input)}`);if(r.code!==200)throw new Error(r.msg||'查询失败');
+    if(!document.getElementById('ipOutput'))return;
+    const d=r.data||{},rows=[['IP 地址',d.ip],['地址版本',d.version],['地址类型',d.scope],['洲 / 国家',[d.continent,d.country].filter(Boolean).join(' / ')],['省份',d.region],['城市',d.city],['运营商',d.isp],['ASN',d.asn?`AS${d.asn}`:''],['时区',d.timezone],['经纬度',d.latitude!=null&&d.longitude!=null?`${d.latitude}, ${d.longitude}`:'']];
+    $('#ipOutput').classList.remove('error');$('#ipOutput').innerHTML=rows.filter(row=>row[1]).map(([key,value])=>`<div class="ip-row"><b>${key}</b><span>${esc(value)}</span></div>`).join('')+(d.message?`<div class="tool-note">${esc(d.message)}</div>`:'');
+  }catch(e){setToolOutput('ipOutput',e.message,true)}finally{button.disabled=false}
+}
+function regexFlags(){return `${$('#regexG').checked?'g':''}${$('#regexI').checked?'i':''}${$('#regexM').checked?'m':''}${$('#regexS').checked?'s':''}`}
+function runRegex(mode){
+  const pattern=$('#regexPattern').value,text=$('#regexText').value;
+  if(!pattern)return setToolOutput('regexOutput','请输入正则表达式。',true);
+  if(text.length>200000)return setToolOutput('regexOutput','测试文本不能超过 200000 个字符。',true);
+  try{
+    const flags=regexFlags(),regex=new RegExp(pattern,flags);
+    if(mode==='replace'){
+      const globalRegex=new RegExp(pattern,flags.includes('g')?flags:flags+'g');
+      setToolOutput('regexOutput',text.replace(globalRegex,$('#regexReplacement').value));return;
+    }
+    const globalRegex=new RegExp(pattern,flags.includes('g')?flags:flags+'g'),lines=[];let count=0,truncated=false;
+    for(const match of text.matchAll(globalRegex)){
+      count++;if(count>500){truncated=true;break}
+      lines.push(`#${count}  位置 ${match.index}  匹配 ${JSON.stringify(match[0])}`);
+      match.slice(1).forEach((group,index)=>lines.push(`    捕获组 $${index+1}: ${JSON.stringify(group)}`));
+    }
+    setToolOutput('regexOutput',`共找到 ${truncated?'超过 ':''}${Math.min(count,500)} 处匹配。${truncated?'仅显示前 500 处。':''}\n\n${lines.join('\n')||'没有匹配内容。'}`);
+  }catch(e){setToolOutput('regexOutput',`正则错误：${e.message}`,true)}
+}
+$('#toolModal').addEventListener('click',e=>{if(e.target===$('#toolModal'))closeTool()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#toolModal').classList.contains('show'))closeTool()});
+$('#rewardModal').addEventListener('click',e=>{if(e.target===$('#rewardModal'))closeRewards()});$('#quotaModal').addEventListener('click',e=>{if(e.target===$('#quotaModal'))closeQuotaLogs()});
+$('#logFilters').addEventListener('submit',e=>{e.preventDefault();loadLogs(1).catch(e=>notify(e.message))});
+$('#logReset').addEventListener('click',resetLogs);
+$('#logPrev').addEventListener('click',()=>{if(logPage>1)loadLogs(logPage-1).catch(e=>notify(e.message))});
+$('#logNext').addEventListener('click',()=>{if(logPage<logPages)loadLogs(logPage+1).catch(e=>notify(e.message))});
+loadAll();
+</script>
+</body></html>
